@@ -1,0 +1,15 @@
+{
+  "name": "MaaasWeb",
+  "version": "0.0.0",
+  "description": "MaaasWeb",
+  "main": "app.js",
+  "author": {
+    "name": "Bob",
+    "email": ""
+  },
+  "dependencies": {
+    "express": "^3.4.4",
+    "express-hbs": "^0.7.10",
+    "log4js": "^0.6.14"
+  }
+}

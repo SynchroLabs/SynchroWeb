@@ -1,0 +1,126 @@
+﻿<div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+    <div class="container">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">Synchro.io</a>
+        </div>
+            
+        <div class="collapse navbar-collapse">
+            <div class="nav navbar-nav navbar-right" style="margin-top:15px;">
+                <iframe id="facebook" src="http://www.facebook.com/plugins/like.php?app_id=201995916528656&amp;href=http%3A%2F%2Fwww.facebook.com%2Fsynchrolabs&amp;send=false&amp;layout=button_count&amp;width=200&amp;show_faces=true&amp;action=like&amp;colorscheme=dark&amp;font=trebuchet+ms&amp;height=21" scrolling="no" frameborder="0" style="visibility:hidden; border:none; overflow:hidden; width:100px; height:21px;" onload="this.style.visibility = 'visible';" allowtransparency="true"></iframe>
+                <a href="https://twitter.com/SynchroLabs" class="twitter-follow-button" data-show-count="true" data-show-screen-name="false" style="visibility: hidden;">Follow @SynchroLabs</a>
+                <script>!function (d, s, id) { var js, fjs = d.getElementsByTagName(s)[0], p = /^http:/.test(d.location) ? 'http' : 'https'; if (!d.getElementById(id)) { js = d.createElement(s); js.id = id; js.src = p + '://platform.twitter.com/widgets.js'; fjs.parentNode.insertBefore(js, fjs); } }(document, 'script', 'twitter-wjs');</script>
+            </div>
+        </div>
+
+        <!--
+        <div class="navbar-collapse collapse">
+            <form class="navbar-form navbar-right" role="form" action="/login" method="post">
+                <div class="form-group">
+                    <input type="text" placeholder="Email" class="form-control" name="email">
+                </div>
+                <div class="form-group">
+                    <input type="password" placeholder="Password" class="form-control" name="password">
+                </div>
+                <button type="submit" class="btn btn-success">Sign in</button>
+            </form>
+        </div>
+        -->
+    </div>
+</div>
+
+<!-- Main jumbotron for a primary marketing message or call to action -->
+<div class="jumbotron">
+    <div class="container">
+        <h1>Synchro&trade;</h1>
+        <img class="aligncenter" src="/images/cloud_system_256.png" align="right" />
+        <h2>The Mobile Application as a Service Platform</h2>
+        <p>
+            Synchro is a revolutionary new platform that allows you to create high quality, high performance,
+            cross-platform native mobile applications via your web browser using simple and familiar tools (JavaScript
+            and the Node.js framework).  The best part: your mobile application actually runs in the cloud!  Your application
+            runs on mobile devices without any of your application code running on the device.  Did we just blow your mind?
+        </p>
+        <p>
+            <a href="#myModal" class="btn btn-primary btn-lg" role="button" data-toggle="modal">Learn more &raquo;</a>
+        </p>
+    </div>
+</div>
+
+<!-- Modal -->
+<div id="myModal" class="modal  fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                <h3 id="myModalLabel">Coming soon!</h3>
+            </div>
+            <div class="modal-body">
+                <p>We&apos;re not quite ready to share more details yet.  Please check back.</p>
+                <p>If you really, really want to chat about this now, please contact: <a href="mailto:bob@synchro.io">bob@synchro.io</a></p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="container">
+    <!-- Example row of columns -->
+    <div class="row">
+        <div class="col-md-4">
+            <h2>Native Apps on Every OS</h2>
+            <p>
+                Build high quality native apps with native look and feel and native performance on iOS, Android,
+                Windows, and Windows Phone.  Apps instantly work and look great on all devices, but for more control you
+                can customize the layouts for a given device type, screen size, OS, or any combination.  Best of
+                all, you build and deploy the app to your mobile clients ONCE.
+            </p>
+            {{!
+            <p>
+                <a class="btn btn-default" href="#" role="button">View details &raquo;</a>
+            </p>
+            }}
+        </div>
+        <div class="col-md-4">
+            <h2>Build and Run in the Cloud</h2>
+            <p>
+                Your mobile apps are created, managed, and hosted in the cloud, meaning that you can make changes, test, and
+                deploy to your entire installed base in minutes.  No more distribution hassles or configuration control nightmares.
+                Options to run Synchro on the cloud provider of your choice, or on-premise, are also available.
+            </p>
+            {{!
+            <p>
+                <a class="btn btn-default" href="#" role="button">View details &raquo;</a>
+            </p>
+            }}
+        </div>
+        <div class="col-md-4">
+            <h2>Integrated Everything</h2>
+            <p>
+                Amazing editor and debugger, unit test framework, localization support, staging and deployment
+                management, mobile client app generator, and more, all accessible through a web browser.  Build
+                awesome native mobile apps with no additional tools or software
+            </p>
+            {{!
+            <p>
+                <a class="btn btn-default" href="#" role="button">View details &raquo;</a>
+            </p>
+            }}
+        </div>
+    </div>
+
+    <hr>
+
+    <footer>
+        <p>&copy; Synchro Labs, Inc. 2014</p>
+    </footer>
+</div>
+<!-- /container -->
