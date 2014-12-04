@@ -8,8 +8,12 @@
 
 # Build results
 
-[Dd]ebug/
-[Rr]elease/
+# RDD - Among other things, the node_module called "debug" (used by at least express) was ignored by this rule
+#       and I was not able to override it with a specific include rule.  There are no debug/release in a web 
+#       site project anyway, except under obj, which is already ingored.
+# [Dd]ebug/
+# [Rr]elease/
+
 x64/
 build/
 [Bb]in/
@@ -155,14 +159,14 @@ $RECYCLE.BIN/
 # Mac desktop service store files
 .DS_Store
 
+# RDD - NTVS turd
+.ntvs_analysis.dat
+
 # RDD - iisnode log files (not sure why they get sprayed into the project
 /MaaasServer/iisnode
 
-# RDD - Enable "debug" package inside connect/express
-!node_modules/*/debug/
-
 # RDD - We want to check in the pre-built binaries for the "fibers" node_module
-!/MaaasServer/node_modules/wait.for/node_modules/fibers/bin
+#!/MaaasServer/node_modules/wait.for/node_modules/fibers/bin
 
 # RDD - Sublime editor 
 *.sublime-project

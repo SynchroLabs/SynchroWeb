@@ -8,7 +8,7 @@
     "email": ""
   },
   "dependencies": {
-    "express": "^3.4.4",
+    "express": "^3.18.4",
     "express-hbs": "^0.7.10",
     "log4js": "^0.6.14"
   }
