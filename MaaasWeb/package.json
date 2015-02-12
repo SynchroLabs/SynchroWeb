@@ -8,8 +8,15 @@
     "email": ""
   },
   "dependencies": {
+    "azure": "^0.10.4",
+    "azure-storage": "^0.4.2",
+    "bcryptjs": "^2.1.0",
     "express": "^3.18.4",
+    "express-flash": "0.0.2",
     "express-hbs": "^0.7.10",
-    "log4js": "^0.6.14"
+    "log4js": "^0.6.14",
+    "nconf": "^0.7.1",
+    "node-uuid": "^1.4.2",
+    "sendgrid": "^1.6.0"
   }
 }

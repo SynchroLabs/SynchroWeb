@@ -1,0 +1,10 @@
+﻿{{#if messages.warn}}
+  {{#each messages.warn}}
+<div class="alert alert-danger"><strong>Warning: </strong>{{this}}</div>
+  {{/each}}
+{{/if}}
+{{#if messages.info}}
+  {{#each messages.info}}
+    <div class="alert alert-info">{{this}}</div>
+  {{/each}}
+{{/if}}

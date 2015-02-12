@@ -60,9 +60,7 @@
 </div>
 
 <div class="container">
-    {{#if warning}}
-    <div class="alert alert-danger"><strong>Warning: </strong>{{warning}}</div>
-    {{/if}}
+    {{> flash}}
     <form class="form-signin" role="form" action="/login" method="post">
     <h2 class="form-signin-heading">Please sign in</h2>
     <input type="email" class="form-control" placeholder="Email address" name="email" required autofocus>

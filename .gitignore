@@ -16,7 +16,10 @@
 
 x64/
 build/
-[Bb]in/
+
+# RDD - Azure web sites have stuff in bin that they care about...
+# [Bb]in/
+
 [Oo]bj/
 
 # Enable "build/" folder in the NuGet Packages folder since NuGet packages use it for MSBuild targets
@@ -163,10 +166,14 @@ $RECYCLE.BIN/
 .ntvs_analysis.dat
 
 # RDD - iisnode log files (not sure why they get sprayed into the project
-/MaaasServer/iisnode
+/*/iisnode
+
+# RDD 
+config.json
+/*/node_modules/**/*
 
 # RDD - We want to check in the pre-built binaries for the "fibers" node_module
-#!/MaaasServer/node_modules/wait.for/node_modules/fibers/bin
+#!/*/node_modules/wait.for/node_modules/fibers/bin
 
 # RDD - Sublime editor 
 *.sublime-project

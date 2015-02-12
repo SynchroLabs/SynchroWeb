@@ -32,11 +32,13 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="app.js" />
+    <Compile Include="models\user.js" />
     <Compile Include="routes\index.js" />
-    <Compile Include="routes\login.js" />
+    <Compile Include="routes\account.js" />
     <None Include="wwwsynchro.pubxml" />
     <None Include="maaas - Web Deploy.pubxml" />
     <None Include="maaas - FTP.pubxml" />
+    <Content Include="bin\Microsoft.NodejsTools.WebRole.dll" />
     <Content Include="package.json" />
     <Content Include="public\images\cloud_system_256.png" />
     <Content Include="public\stylesheets\style.css" />
@@ -44,6 +46,7 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="bin\" />
+    <Folder Include="models\" />
     <Folder Include="public\" />
     <Folder Include="public\images\" />
     <Folder Include="public\scripts\" />
@@ -57,7 +60,8 @@
     <Content Include="views\index.hbs" />
     <Content Include="views\layouts\default.hbs" />
     <Content Include="views\login.hbs" />
-    <Content Include="views\partials\test.hbs" />
+    <Content Include="views\partials\flash.hbs" />
+    <Content Include="views\signup.hbs" />
     <Content Include="Web.config" />
     <Content Include="Web.Debug.config" />
     <Content Include="bin\ChangeConfig.ps1" />

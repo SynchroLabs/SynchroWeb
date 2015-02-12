@@ -2,10 +2,12 @@
  * Module dependencies.
  */
 var express = require('express');
-var login = require('./routes/login');
+var expressFlash = require('express-flash');
 var http = require('http');
 var path = require('path');
 var log4js = require('log4js');
+
+var account = require('./routes/account');
 
 // Redirect console.log to log4js, turn off color coding
 log4js.configure({ appenders: [ { type: "console", layout: { type: "basic" } } ], replaceConsole: true })
@@ -37,12 +39,12 @@ app.use(express.cookieParser());
 // Note: Setting the maxAge value to 60000 (one hour) generates a cookie that .NET does not record (date generation/parsing
 // is my guess) - for now we just omit expiration...
 app.use(express.cookieSession({ store: sessionStore, secret: 'sdf89f89fd7sdf7sdf', cookie: { maxAge: false, httpOnly: true } }));
+app.use(expressFlash());
 app.use(express.favicon());
 app.use(log4js.connectLogger(logger, { level: 'auto' })); //app.use(express.logger('dev'));
 app.use(express.query());
 app.use(express.json());
 app.use(express.urlencoded());
-app.use(express.methodOverride());
 app.use(app.router);
 app.use(express.static(path.join(__dirname, 'public')));
 
@@ -51,11 +53,14 @@ if ('development' == app.get('env')) {
   app.use(express.errorHandler());
 }
 
-app.get('/', function(req, res) {
+app.get('/', function (req, res) {
     res.render('index');
 });
-app.all('/login', login.login);
-app.get('/logout', login.logout);
+app.all('/login', account.login);
+app.get('/logout', account.logout);
+app.all('/signup', account.signup);
+app.all('/getsecret', account.getSecret);
+app.get('/dist/:id/:filename', account.dist);
 
 var server = http.createServer(app);
 server.listen(app.get('port'), function(){
