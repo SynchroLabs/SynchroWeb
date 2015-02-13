@@ -59,6 +59,10 @@ app.get('/', function (req, res) {
 app.all('/login', account.login);
 app.get('/logout', account.logout);
 app.all('/signup', account.signup);
+app.all('/changepass', account.changePassword);
+app.all('/verify', account.verifyAccount);
+app.all('/forgot', account.forgotPassword);
+app.all('/reset', account.resetPassword);
 app.all('/getsecret', account.getSecret);
 app.get('/dist/:id/:filename', account.dist);
 

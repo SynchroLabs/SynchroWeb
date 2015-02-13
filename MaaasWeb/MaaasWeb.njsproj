@@ -57,10 +57,12 @@
     <Folder Include="views\partials\" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="views\forgot.hbs" />
     <Content Include="views\index.hbs" />
     <Content Include="views\layouts\default.hbs" />
     <Content Include="views\login.hbs" />
     <Content Include="views\partials\flash.hbs" />
+    <Content Include="views\partials\formstyles.hbs" />
     <Content Include="views\signup.hbs" />
     <Content Include="Web.config" />
     <Content Include="Web.Debug.config" />

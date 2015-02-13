@@ -6,6 +6,10 @@ nconf.env().file({ file: 'config.json' });
 var storageAccount = nconf.get("STORAGE_ACCOUNT");
 var storageAccessKey = nconf.get("STORAGE_ACCESS_KEY");
 
+var sendgridApiUser = nconf.get("SENDGRID_API_USER");
+var sendgridApiKey = nconf.get("SENDGRID_API_KEY");
+var sendgrid = require('sendgrid')(sendgridApiUser, sendgridApiKey);
+
 var userModel = require('../models/user')({storageAccount: storageAccount, storageAccessKey: storageAccessKey});
     
 exports.signup = function (req, res, message)
@@ -99,8 +103,7 @@ exports.login = function(req, res, message)
     }
     else
     {
-        res.render('login', { warning: req.session.loginMessage });
-        req.session.loginMessage = null;
+        res.render('login', { });
     }
 };
 
@@ -176,10 +179,77 @@ exports.verifyAccount = function (req, res, next)
 
 exports.forgotPassword = function (req, res, next)
 {
+    var post = req.body;
+    if (post && post.email)
+    {
+        userModel.getUser(post.email, function (err, user)
+        {
+            if (err)
+            {
+                req.flash("warn", "Error verifying email address");
+                res.render('forgot', {});
+            }
+            else if (!user)
+            {
+                // User didn't exists
+                req.flash("warn", "No account exists with the provided email address");
+                res.render('forgot', {});
+            }
+            else
+            {
+                // Winner!
+                
+                // !!! Need to generate a recovery uuid, jam it in the db, then put a link in the message in the form:
+                //     /[host]/reset?code=[recovery code]
+
+                var message = 
+                {
+                    to: user.email,
+                    from: 'webadmin@synchro.io',
+                    subject: 'Synchro.io Password Reset',
+                    text: 'OK, go ahead and reset your password'
+                }
+                
+                sendgrid.send(message, function (err, json)
+                {
+                    if (err)
+                    {
+                        req.flash("warn", "Failed to send password reset email message");
+                        res.render('forgot', {});
+                    }
+                    else
+                    {
+                        req.flash("info", "Password reset email sent");
+                        var nextPage = "/"; // default
+                        if (req.session.nextPage)
+                        {
+                            nextPage = req.session.nextPage;
+                            req.session.nextPage = null;
+                        }
+                        res.redirect(nextPage);
+                    }
+                });               
+            }
+        });
+    }
+    else
+    {
+        res.render('forgot', { });
+    }
 }
 
 exports.resetPassword = function (req, res, next)
 {
+    if (req.query.code)
+    {
+        // !!! verify code, allow reset if valid by rendering pw reset form (hidden form field of "code"?)
+    }
+    else
+    {
+        // !!! render form with place for user to provide recovery code
+    }
+
+    // !!! Need to handle post (either here or in separate handler)
 }
 
 var blobService = azure.createBlobService(storageAccount, storageAccessKey);
