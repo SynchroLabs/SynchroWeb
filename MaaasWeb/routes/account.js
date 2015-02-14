@@ -14,6 +14,9 @@ var userModel = require('../models/user')({storageAccount: storageAccount, stora
     
 exports.signup = function (req, res, message)
 {
+    var page = "signup";
+    var locals = { session: req.session, post: req.body };
+    
     var post = req.body;
     if (post && post.email)
     {
@@ -22,12 +25,12 @@ exports.signup = function (req, res, message)
             if (err)
             {
                 req.flash("warn", "Error checking to see if account already existed");
-                res.render('signup', {});
+                res.render(page, locals);
             }
             else if (user)
             {
                 req.flash("warn", "An account with that email address already exists");
-                res.render('signup', {});
+                res.render(page, locals);
             }
             else
             {
@@ -48,7 +51,7 @@ exports.signup = function (req, res, message)
                     else
                     {
                         req.flash("warn", "Account could not be created");
-                        res.render('signup', {});
+                        res.render(page, locals);
                     }
                 });
             }
@@ -56,12 +59,15 @@ exports.signup = function (req, res, message)
     }
     else
     {
-        res.render('signup', {});
+        res.render(page, locals);
     }
 };
 
 exports.login = function(req, res, message)
 {
+    var page = "login";
+    var locals = { session: req.session, post: req.body };
+    
     var post = req.body;
     if (post && post.email)
     {
@@ -70,13 +76,13 @@ exports.login = function(req, res, message)
             if (err)
             {
                 req.flash("warn", "Error verifying email address and password");
-                res.render('login', {});
+                res.render(page, locals);
             }
             else if (!user)
             {
                 // User didn't exists
                 req.flash("warn", "Email address and password combination were not correct");
-                res.render('login', {});
+                res.render(page, locals);
             }
             else
             {
@@ -96,14 +102,14 @@ exports.login = function(req, res, message)
                 {
                     // Invalid password
                     req.flash("warn", "Email address and password combination were not correct");
-                    res.render('login', {});
+                    res.render(page, locals);
                 }
             }
         });
     }
     else
     {
-        res.render('login', { });
+        res.render(page, locals);
     }
 };
 
@@ -111,7 +117,7 @@ exports.logout = function(req, res)
 {
     delete req.session.userid;
     req.flash("info", "You have been signed out");
-    res.redirect('/login');
+    res.redirect('/');
 }
 
 exports.checkAuth = function(req, res, next) 
@@ -171,14 +177,110 @@ exports.getSecret = function (req, res, next)
 
 exports.changePassword = function (req, res, next)
 {
+    // !!! require logged in
+    
+    var page = "changepass";
+    var locals = { session: req.session, post: req.body };
+
+    if (req.method == "POST")
+    {
+        if (!req.body.password)
+        {
+            req.flash("warn", "Password, new password, and new password verification are all required");
+            res.render(page, locals);
+        }
+        else if (req.body.newpassword != req.body.newpassword2)
+        {
+            req.flash("warn", "New password and new password verification are not the same");
+            res.render(page, locals);
+        }
+        else
+        {
+            userModel.getUser(req.session.userid, function (err, user)
+            {
+                if (err)
+                {
+                    req.flash("warn", "Error looking up logged in user");
+                    res.render(page, locals);
+                }
+                else if (!user)
+                {
+                    // User didn't exists
+                    req.flash("warn", "Error looking up user logged in user, account not found");
+                    res.render(page, locals);
+                }
+                else
+                {
+                    // Got logged-in user
+                    //
+                    if (user.isPasswordValid(req.body.password))
+                    {
+                        user.setPassword(req.body.newpassword);
+                        user.update(function (err)
+                        {
+                            if (err)
+                            {
+                                req.flash("warn", "Error update password");
+                                res.render(page, locals);
+                            }
+                            else
+                            {
+                                req.flash("info", "Password successfully updated");
+                                res.redirect("/");
+                            }
+                        });
+                    }
+                    else
+                    {
+                        req.flash("warn", "Current password was not correct");
+                        res.render(page, locals);
+                    }
+                }
+            });
+        }
+    }
+    else
+    {
+        res.render('changepass', { session: req.session });
+    }
 }
 
 exports.verifyAccount = function (req, res, next)
 {
+    var page = "verify";    
+    var params = (req.method == "POST" ? req.body : req.query);
+    var locals = { session: req.session, post: params };
+
+    if ((req.method == "POST")  && !req.body.code)
+    {
+        // POST with no code (error)...
+        //
+        req.flash("warn", "Verification code is required");
+        res.render(page, locals);
+    }
+    else if (!params.code)
+    {
+        // GET with no code...
+        //
+        res.render(page, locals);
+    }
+    else
+    {
+        // We have a code!
+        //
+        // !!! If not logged in, we need to force login (either on this form, or redirect w/ "next")
+        //
+        // !!! Check the code
+        //
+        res.render(page, locals);
+    }
 }
 
 exports.forgotPassword = function (req, res, next)
 {
+    var page = "forgot";
+    var locals = { session: req.session, post: req.body };
+    
     var post = req.body;
     if (post && post.email)
     {
@@ -187,13 +289,13 @@ exports.forgotPassword = function (req, res, next)
             if (err)
             {
                 req.flash("warn", "Error verifying email address");
-                res.render('forgot', {});
+                res.render(page, locals);
             }
             else if (!user)
             {
                 // User didn't exists
                 req.flash("warn", "No account exists with the provided email address");
-                res.render('forgot', {});
+                res.render(page, locals);
             }
             else
             {
@@ -215,7 +317,7 @@ exports.forgotPassword = function (req, res, next)
                     if (err)
                     {
                         req.flash("warn", "Failed to send password reset email message");
-                        res.render('forgot', {});
+                        res.render(page, locals);
                     }
                     else
                     {
@@ -234,12 +336,15 @@ exports.forgotPassword = function (req, res, next)
     }
     else
     {
-        res.render('forgot', { });
+        res.render(page, locals);
     }
 }
 
 exports.resetPassword = function (req, res, next)
 {
+    var page = "reset";
+    var locals = { session: req.session, post: req.body };
+
     if (req.query.code)
     {
         // !!! verify code, allow reset if valid by rendering pw reset form (hidden form field of "code"?)
@@ -250,6 +355,7 @@ exports.resetPassword = function (req, res, next)
     }
 
     // !!! Need to handle post (either here or in separate handler)
+    res.render(page, locals);
 }
 
 var blobService = azure.createBlobService(storageAccount, storageAccessKey);

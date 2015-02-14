@@ -1,0 +1,13 @@
+﻿{{#content "pageStyles" }}
+  {{> formstyles}}
+{{/content}}
+
+<div class="container">
+    {{> flash}}
+    <form class="form-account" role="form" action="/verify" method="post">
+        <h2 class="form-account-heading">Account Verification</h2>
+        <label for="email">Verification Code</label>
+        <input type="text" class="form-control" name="code" value="{{post.code}}" required autofocus>
+        <button class="btn btn-lg btn-primary btn-block" type="submit">Verify Account</button>
+    </form>
+</div> <!-- /container -->

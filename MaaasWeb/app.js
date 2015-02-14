@@ -36,8 +36,6 @@ app.set('view engine', 'hbs');
 app.set('views', __dirname + '/views');
 
 app.use(express.cookieParser());
-// Note: Setting the maxAge value to 60000 (one hour) generates a cookie that .NET does not record (date generation/parsing
-// is my guess) - for now we just omit expiration...
 app.use(express.cookieSession({ store: sessionStore, secret: 'sdf89f89fd7sdf7sdf', cookie: { maxAge: false, httpOnly: true } }));
 app.use(expressFlash());
 app.use(express.favicon());
@@ -54,7 +52,7 @@ if ('development' == app.get('env')) {
 }
 
 app.get('/', function (req, res) {
-    res.render('index');
+    res.render('index', { session: req.session });
 });
 app.all('/login', account.login);
 app.get('/logout', account.logout);

@@ -39,6 +39,7 @@
     <None Include="maaas - Web Deploy.pubxml" />
     <None Include="maaas - FTP.pubxml" />
     <Content Include="bin\Microsoft.NodejsTools.WebRole.dll" />
+    <Content Include="views\changepass.hbs" />
     <Content Include="package.json" />
     <Content Include="public\images\cloud_system_256.png" />
     <Content Include="public\stylesheets\style.css" />
@@ -63,7 +64,9 @@
     <Content Include="views\login.hbs" />
     <Content Include="views\partials\flash.hbs" />
     <Content Include="views\partials\formstyles.hbs" />
+    <Content Include="views\reset.hbs" />
     <Content Include="views\signup.hbs" />
+    <Content Include="views\verify.hbs" />
     <Content Include="Web.config" />
     <Content Include="Web.Debug.config" />
     <Content Include="bin\ChangeConfig.ps1" />

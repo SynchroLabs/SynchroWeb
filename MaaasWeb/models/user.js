@@ -37,7 +37,7 @@ module.exports = function (params)
         this.verified = entity.verified._;
     }
     
-    User.prototype.setPassword - function (password)
+    User.prototype.setPassword = function (password)
     {
         this.passwordHash = bcrypt.hashSync(password);
     }    

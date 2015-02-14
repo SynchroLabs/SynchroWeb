@@ -1,0 +1,17 @@
+﻿{{#content "pageStyles" }}
+  {{> formstyles}}
+{{/content}}
+
+<div class="container">
+    {{> flash}}
+    <form class="form-account" role="form" action="/changepass" method="post">
+        <h2 class="form-account-heading">Change Password</h2>
+        <label for="password">Password</label>
+        <input type="password" class="form-control" name="password" value="{{post.password}}" required>
+        <label for="newpassword">New Password</label>
+        <input type="password" class="form-control" name="newpassword" value="{{post.newpassword}}" required>
+        <label for="newpassword2">Verify New Password</label>
+        <input type="password" class="form-control" name="newpassword2" value="{{post.newpassword2}}" required>
+        <button class="btn btn-lg btn-primary btn-block" type="submit">Set New Password</button>
+    </form>
+</div> <!-- /container -->
