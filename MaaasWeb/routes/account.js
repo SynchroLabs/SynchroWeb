@@ -12,7 +12,19 @@ var sendgrid = require('sendgrid')(sendgridApiUser, sendgridApiKey);
 
 var userModel = require('../models/user')({storageAccount: storageAccount, storageAccessKey: storageAccessKey});
 
-// !!! Need menu item that will re-send the verification code (if user not yet verified)
+function setSessionUser(session, user)
+{
+    session.userid = user.userid;
+    session.email = user.email;
+    session.verified = user.verified;
+}
+
+function clearSessionUser(session)
+{
+    delete session.userid;
+    delete session.email;
+    delete session.verified;
+}
 
 function sendVerificationEmail(req, user, callback)
 {
@@ -64,7 +76,7 @@ exports.signup = function (req, res, message)
     var post = req.body;
     if (post && post.email)
     {
-        userModel.getUser(post.email, function (err, user)
+        userModel.getUserForKey("email", post.email, function (err, user)
         {
             if (err)
             {
@@ -82,7 +94,7 @@ exports.signup = function (req, res, message)
                 {
                     if (!err)
                     {
-                        req.session.userid = user.email;
+                        setSessionUser(req.session, user);                        
                         
                         sendVerificationEmail(req, user, function (err, json)
                         {
@@ -128,7 +140,7 @@ exports.login = function(req, res, message)
     var post = req.body;
     if (post && post.email)
     {
-        userModel.getUser(post.email, function (err, user)
+        userModel.getUserForKey("email", post.email, function (err, user)
         {
             if (err)
             {
@@ -146,8 +158,7 @@ exports.login = function(req, res, message)
                 if (user.isPasswordValid(post.password))
                 {
                     // Winner!
-                    req.session.userid = user.email;
-                    req.session.verified = user.verified;
+                    setSessionUser(req.session, user);
 
                     var nextPage = "/"; // default
                     if (req.session.nextPage)
@@ -168,18 +179,24 @@ exports.login = function(req, res, message)
     }
     else
     {
+        if (req.session.loginAs)
+        {
+            locals.post = { email: req.session.loginAs };
+            delete req.session.loginAs;
+        }
+
         res.render(page, locals);
     }
 };
 
 exports.logout = function(req, res)
 {
-    delete req.session.userid;
+    clearSessionUser(req.session);
     req.flash("info", "You have been signed out");
     res.redirect('/');
 }
 
-exports.checkAuth = function(req, res, next) 
+exports.requireSignedIn = function(req, res, next) 
 {
     if (!req.session.userid)
     {
@@ -195,8 +212,6 @@ exports.checkAuth = function(req, res, next)
 
 exports.changePassword = function (req, res, next)
 {
-    // !!! require logged in
-    
     var page = "changepass";
     var locals = { session: req.session, post: req.body };
 
@@ -265,8 +280,6 @@ exports.changePassword = function (req, res, next)
 
 exports.verifyAccount = function (req, res, next)
 {
-    // !!! require logged in (what if you are logged in under a different account)?
-
     var page = "verify";    
     var params = (req.method == "POST" ? req.body : req.query);
     var locals = { session: req.session, post: params };
@@ -275,25 +288,30 @@ exports.verifyAccount = function (req, res, next)
     {
         // We have a code!
         //
-        userModel.getUser(req.session.userid, function (err, user)
+        userModel.getUserForKey("verificationCode", params.code, function (err, user)
         {
             if (err)
             {
-                req.flash("warn", "Error looking up logged in user");
+                req.flash("warn", "Error looking up account for verification");
                 res.render(page, locals);
             }
             else if (!user)
             {
                 // User didn't exists
-                req.flash("warn", "Error looking up user logged in user, account not found");
+                req.flash("warn", "No account exists for the supplied verification code");
                 res.render(page, locals);
             }
             else
             {
-                // Got logged-in user
+                // Got user
                 //
-                if (params.codd == user.verificationCode)
+                if (user.verified)
                 {
+                    req.flash("warn", "The account email address: " + user.email + " has been previously verified");
+                    res.redirect('/');
+                }
+                else
+                {   
                     user.setVerified();
                     user.update(function (err)
                     {
@@ -302,17 +320,17 @@ exports.verifyAccount = function (req, res, next)
                             req.flash("warn", "Error saving user account verification");
                             res.render(page, locals);
                         }
+                        else if (req.session.userid && (req.session.userid != user.userid))
+                        {
+                            req.flash("info", "The account email address: " + user.email + " has been verified, but note that this is not the email address associated with the account to which you are currently logged in");
+                            res.redirect('/');
+                        }
                         else
                         {
-                            req.flash("info", "Your account email address has been verified");
+                            req.flash("info", "The account email address: " + user.email + " has been verified");
                             res.redirect('/');
                         }
                     });
-                }
-                else
-                {
-                    req.flash("warn", "Incorrect verification code for currently logged in account");
-                    res.render(page, locals);
                 }
             }
         });
@@ -330,6 +348,42 @@ exports.verifyAccount = function (req, res, next)
     }
 }
 
+exports.resendVerification = function (req, res, next)
+{
+    userModel.getUser(req.session.userid, function (err, user)
+    {
+        if (err)
+        {
+            req.flash("warn", "Error looking up logged in user");
+            res.render(page, locals);
+        }
+        else if (!user)
+        {
+            // User didn't exists
+            req.flash("warn", "Error looking up user logged in user, account not found");
+            res.render(page, locals);
+        }
+        else
+        {
+            // Got logged-in user
+            //
+            sendVerificationEmail(req, user, function (err, json)
+            {
+                if (err)
+                {
+                    req.flash("warn", "Failed to send account verification email");
+                    console.log("Sendgrid failure:", err);
+                }
+                else
+                {
+                    req.flash('info', 'Verification email resent');
+                }
+                res.redirect('back');
+            });
+        }
+    });
+}
+
 exports.forgotPassword = function (req, res, next)
 {
     var page = "forgot";
@@ -338,7 +392,7 @@ exports.forgotPassword = function (req, res, next)
     var post = req.body;
     if (post && post.email)
     {
-        userModel.getUser(post.email, function (err, user)
+        userModel.getUserForKey("email", post.email, function (err, user)
         {
             if (err)
             {
@@ -355,11 +409,7 @@ exports.forgotPassword = function (req, res, next)
             {
                 // Found user!
                 //
-                var recoveryCode = user.generateRecoveryCode();
-
-                var host = req.headers.host || "synchro.io";
-                var recoveryLink = req.protocol + "://" + host + "/reset?code=" + recoveryCode;
-
+                user.generateRecoveryCode();
                 user.update(function (err)
                 {
                     if (err)
@@ -402,10 +452,6 @@ exports.forgotPassword = function (req, res, next)
 
 exports.resetPassword = function (req, res, next)
 {
-    // !!! Investigate - what happens if you are logged in?  Maybe even under a different account than the
-    //     one being reset?  Maybe we should log the user out here (since we're going to make then log back
-    //     in after the password reset anyway).
-    //
     var page = "reset";
     var locals = { session: req.session, post: req.body };
     
@@ -443,6 +489,7 @@ exports.resetPassword = function (req, res, next)
                 else if (!user)
                 {
                     // No matching user found
+                    delete locals.code; // This will force display of the code in the form
                     req.flash("warn", "Recovery code is invalid");
                     res.render(page, locals);
                 }
@@ -462,6 +509,13 @@ exports.resetPassword = function (req, res, next)
                         }
                         else
                         {
+                            if (req.session.userid && (req.session.userid != user.userid))
+                            {
+                                req.flash("warn", "The password was reset for an account other than the one to which you were logged in");
+                            }
+                            
+                            req.session.loginAs = req.session.email;
+                            clearSessionUser(req.session);
                             req.flash("info", "Password successfully reset, please log in now.");
                             res.redirect('login');
                         }
@@ -472,8 +526,43 @@ exports.resetPassword = function (req, res, next)
     }
     else
     {
-        locals.code = req.query.code;
-        res.render(page, locals);
+        if (req.query.code)
+        {
+            locals.code = req.query.code;
+            userModel.getUserForKey("recoveryCode", req.query.code, function (err, user)
+            {
+                if (err)
+                {
+                    // Error
+                    req.flash("warn", "Error searching for account with specified recovery code");
+                    res.render(page, locals);
+                }
+                else if (!user)
+                {
+                    // No matching user found
+                    delete locals.code; // This will force display of the code in the form
+                    locals.post.code = req.query.code; // This will populate the code in the form
+                    req.flash("warn", "Recovery code is invalid");
+                    res.render(page, locals);
+                }
+                else
+                {
+                    // User found!
+                    //
+                    if (req.session.userid && (req.session.userid != user.userid))
+                    {
+                        req.flash("warn", "The password reset code corresponds to an account other than the one to which you were logged in");
+                        req.session.loginAs = req.session.email;
+                        clearSessionUser(req.session);
+                    }
+                    res.render(page, locals);
+                }
+            });
+        }
+        else
+        {
+            res.render(page, locals);
+        }
     }
 }
 
@@ -483,7 +572,7 @@ exports.getSecret = function (req, res, next)
 {
     if (req.query.email && req.query.password)
     {
-        userModel.getUser(req.query.email, function (err, user)
+        userModel.getUserForKey("email", req.query.email, function (err, user)
         {
             if (err)
             {

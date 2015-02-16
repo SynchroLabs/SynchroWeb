@@ -31,7 +31,8 @@ module.exports = function (params)
     function User(entity)
     {
         this.entity = entity;
-        this.email = entity.RowKey._;
+        this.userid = entity.RowKey._;
+        this.email = entity.email._;
         this.passwordHash = entity.passwordHash._;
         this.secret = entity.secret._;
         this.verificationCode = entity.verificationCode ? entity.verificationCode._ : null;
@@ -43,6 +44,7 @@ module.exports = function (params)
     User.prototype.setPassword = function (password)
     {
         this.passwordHash = bcrypt.hashSync(password);
+        this.entity.passwordHash = entGen.String(this.passwordHash);
     }    
 
     User.prototype.isPasswordValid = function (password)
@@ -53,11 +55,19 @@ module.exports = function (params)
     User.prototype.setVerified = function()
     {
         this.verified = true;
-        this.verificationCode = null
+        this.entity.verified = entGen.Boolean(this.verified);
+        
+        // We're going to leave the verification code even after verifying, so we can detect the case
+        // where someone attempts to re-submit a verification (so we can detect the resubmit case vs bad
+        // verification code).
+        //
+        /*
+        this.verificationCode = null;
         if (this.entity.verificationCode)
         {
             delete this.entity.verificationCode;
         }
+         */
     }
 
     User.prototype.generateRecoveryCode = function()
@@ -86,9 +96,10 @@ module.exports = function (params)
     
     User.prototype.update = function (callback)
     {
-        // Update the entity (from members that might have been changed directly by consumer of User)
-        this.entity.passwordHash = entGen.String(this.passwordHash);
-        this.entity.verified = entGen.Boolean(this.verified);
+        // Update the entity (properties that might have been changed directly by consumer of User)
+        //
+        // [currently, there are no such properties]
+        //
 
         // Do the update...
         tableService.updateEntity(tableName, this.entity, function (error, entity, response)
@@ -115,7 +126,8 @@ module.exports = function (params)
             var entGen = azure.TableUtilities.entityGenerator;
             var user = {
                 PartitionKey: entGen.String(partitionKey),
-                RowKey: entGen.String(email),
+                RowKey: entGen.String(uuid.v4()),
+                email: entGen.String(email),
                 passwordHash: entGen.String(bcrypt.hashSync(password)),
                 secret: entGen.String(uuid.v4()),
                 verificationCode: entGen.String(uuid.v4()),
@@ -138,9 +150,9 @@ module.exports = function (params)
             });
         },
         
-        getUser: function (email, callback) // user if exists, else null
+        getUser: function (userid, callback) // user if exists, else null
         {
-            tableService.retrieveEntity(tableName, partitionKey, email, function (error, entity, response)
+            tableService.retrieveEntity(tableName, partitionKey, userid, function (error, entity, response)
             {
                 if (!error)
                 {
@@ -160,11 +172,11 @@ module.exports = function (params)
             });
         },
         
-        deleteUser: function (email, callback) // bool
+        deleteUser: function (userid, callback) // bool
         {
             var entity = {
                 PartitionKey: entGen.String(partitionKey),
-                RowKey: entGen.String(email)
+                RowKey: entGen.String(userid)
             }
 
             tableService.deleteEntity(tableName, entity, function (error, successful, response)
