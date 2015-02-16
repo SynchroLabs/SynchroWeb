@@ -1,10 +1,11 @@
-﻿{{#if messages.warn}}
+﻿<!-- danger (error), warning, success, info -->
+{{#if messages.warn}}
   {{#each messages.warn}}
-<div class="alert alert-danger"><strong>Warning: </strong>{{this}}</div>
+<div class="alert alert-danger fade in"><strong>Warning: </strong><button class="close" data-dismiss="alert">×</button>{{this}}</div>
   {{/each}}
 {{/if}}
 {{#if messages.info}}
   {{#each messages.info}}
-    <div class="alert alert-info">{{this}}</div>
+    <div class="alert alert-info fade in"><button class="close" data-dismiss="alert">×</button>{{this}}</div>
   {{/each}}
 {{/if}}

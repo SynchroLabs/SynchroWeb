@@ -31,10 +31,13 @@ module.exports = function (params)
     function User(entity)
     {
         this.entity = entity;
-        this.email = entity.RowKey._; // JSON.parse?
+        this.email = entity.RowKey._;
         this.passwordHash = entity.passwordHash._;
         this.secret = entity.secret._;
+        this.verificationCode = entity.verificationCode ? entity.verificationCode._ : null;
         this.verified = entity.verified._;
+        this.recoveryCode = entity.recoveryCode ? entity.recoveryCode._ : null;
+        this.recoveryCodeIssued = entity.recoveryCodeIssued ? entity.recoveryCodeIssued._ : null;
     }
     
     User.prototype.setPassword = function (password)
@@ -45,7 +48,41 @@ module.exports = function (params)
     User.prototype.isPasswordValid = function (password)
     {
         return bcrypt.compareSync(password, this.passwordHash);
-    };
+    }
+    
+    User.prototype.setVerified = function()
+    {
+        this.verified = true;
+        this.verificationCode = null
+        if (this.entity.verificationCode)
+        {
+            delete this.entity.verificationCode;
+        }
+    }
+
+    User.prototype.generateRecoveryCode = function()
+    {
+        this.recoveryCode = uuid.v4();
+        this.recoveryCodeIssued = new Date();
+        this.entity.recoveryCode = entGen.String(this.recoveryCode);
+        this.entity.recoveryCodeIssued = entGen.DateTime(this.recoveryCodeIssued);
+
+        return this.recoveryCode;
+    }
+    
+    User.prototype.clearRecoveryCode = function()
+    {
+        this.recoveryCode = null;
+        this.recoveryCodeIssued = null;
+        if (this.entity.recoveryCode)
+        {
+            delete this.entity.recoveryCode;
+        }
+        if (this.entity.recoveryCodeIssued)
+        {
+            delete this.entity.recoveryCodeIssued;
+        }
+    }
     
     User.prototype.update = function (callback)
     {
@@ -81,6 +118,7 @@ module.exports = function (params)
                 RowKey: entGen.String(email),
                 passwordHash: entGen.String(bcrypt.hashSync(password)),
                 secret: entGen.String(uuid.v4()),
+                verificationCode: entGen.String(uuid.v4()),
                 verified: entGen.Boolean(false),
                 accountCreationDate: entGen.DateTime(new Date())
             };
@@ -144,32 +182,32 @@ module.exports = function (params)
             });
         },
 
-        getAccountForSecret: function (secret, callback)
+        getUserForKey: function (key, value, callback)
         {
-            var query = new azure.TableQuery().top(1).where('secret eq ?', secret);
+            var query = new azure.TableQuery().top(1).where(key + ' eq ?', value);
             tableService.queryEntities(tableName, query, null, function (error, result, response)
             {
                 if (!error)
                 {
                     if (result.entries && result.entries.length > 0)
                     {
-                        console.log("Azure getAccountForSecret - table entity retrieved");
+                        console.log("Azure getUserForKey - table entity retrieved");
                         var user = new User(result.entries[0]);
                         callback(null, user);
                     }
                     else
                     {
-                        console.log("Azure getAccountForSecret - no matching table entity found");
+                        console.log("Azure getUserForKey - no matching table entity found");
                         callback(null);
                     }
                 }
                 else
                 {
-                    logger.info("Azure getAccountForSecret - failed: " + error);
+                    logger.info("Azure getUserForKey - failed: " + error);
                     callback(error);
                 }
             });
-        }
+        },
     }
 
     return userModel;

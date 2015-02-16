@@ -6,8 +6,12 @@
     {{> flash}}
     <form class="form-account" role="form" action="/reset" method="post">
         <h2 class="form-account-heading">Reset Password</h2>
+        {{#if code}}
+        <input type="hidden" name="code" value="{{code}}">
+        {{else}}
         <label for="password">Reset Code</label>
         <input type="text" class="form-control" name="code" value="{{post.code}}" required>
+        {{/if}}
         <label for="newpassword">New Password</label>
         <input type="password" class="form-control" name="newpassword" value="{{post.newpassword}}" required>
         <label for="newpassword2">Verify New Password</label>
