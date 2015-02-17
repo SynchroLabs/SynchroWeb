@@ -74,9 +74,9 @@ exports.signup = function (req, res, message)
     var locals = { session: req.session, post: req.body };
     
     var post = req.body;
-    if (post && post.email)
+    if (post && post.username)
     {
-        userModel.getUserForKey("email", post.email, function (err, user)
+        userModel.getUserForKey("email", post.username, function (err, user)
         {
             if (err)
             {
@@ -90,7 +90,7 @@ exports.signup = function (req, res, message)
             }
             else
             {
-                userModel.createUser(post.email, post.password, function (err, user)
+                userModel.createUser(post.username, post.password, function (err, user)
                 {
                     if (!err)
                     {
@@ -138,9 +138,9 @@ exports.login = function(req, res, message)
     var locals = { session: req.session, post: req.body };
     
     var post = req.body;
-    if (post && post.email)
+    if (post && post.username)
     {
-        userModel.getUserForKey("email", post.email, function (err, user)
+        userModel.getUserForKey("email", post.username, function (err, user)
         {
             if (err)
             {
@@ -328,6 +328,10 @@ exports.verifyAccount = function (req, res, next)
                         else
                         {
                             req.flash("info", "The account email address: " + user.email + " has been verified");
+                            if (req.session.userid && (req.session.userid == user.userid))
+                            {
+                                setSessionUser(req.session, user); // update verification in session
+                            }
                             res.redirect('/');
                         }
                     });
