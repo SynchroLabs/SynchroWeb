@@ -1,6 +1,14 @@
 ﻿var nconf = require('nconf');
 var azure = require('azure-storage');
 
+var analytics = require('universal-analytics');
+
+// Require for Zendesk JWT SSO
+//
+var uuid = require('node-uuid');
+var url = require('url');
+var jwt = require('jwt-simple');
+
 nconf.env().file({ file: 'config.json' });
 
 var storageAccount = nconf.get("STORAGE_ACCOUNT");
@@ -10,17 +18,34 @@ var sendgridApiUser = nconf.get("SENDGRID_API_USER");
 var sendgridApiKey = nconf.get("SENDGRID_API_KEY");
 var sendgrid = require('sendgrid')(sendgridApiUser, sendgridApiKey);
 
+var zendeskSubdomain = nconf.get("ZENDESK_SUBDOMAIN");
+var zendeskSharedKey = nconf.get("ZENDESK_SHARED_KEY");
+var zendeskUri = 'https://' + zendeskSubdomain + '.zendesk.com/';
+
 var userModel = require('../models/user')({storageAccount: storageAccount, storageAccessKey: storageAccessKey});
 
-function setSessionUser(session, user)
+function isSynchroIo()
+{
+    return nconf.get("WEBSITE_DOMAIN") == "synchro.io";
+}
+
+exports.isSynchroIo = function ()
+{
+    return isSynchroIo();
+}
+
+function setSessionUser(session, user, res)
 {
     session.userid = user.userid;
     session.email = user.email;
     session.verified = user.verified;
+
+    // !!! Let Google Anaytics know the userid
 }
 
-function clearSessionUser(session)
+function clearSessionUser(session, res)
 {
+    // This will still leave other session (session cookie) values, like flash messages, nextPage, etc, just FYI
     delete session.userid;
     delete session.email;
     delete session.verified;
@@ -94,7 +119,7 @@ exports.signup = function (req, res, message)
                 {
                     if (!err)
                     {
-                        setSessionUser(req.session, user);                        
+                        setSessionUser(req.session, user, res);                        
                         
                         sendVerificationEmail(req, user, function (err, json)
                         {
@@ -106,14 +131,10 @@ exports.signup = function (req, res, message)
                             }
                             else
                             {
-                                req.flash("info", "Account created and email verification message sent");
-                                var nextPage = "/"; // default
-                                if (req.session.nextPage)
-                                {
-                                    nextPage = req.session.nextPage;
-                                    req.session.nextPage = null;
-                                }
-                                res.redirect(nextPage);
+                                // We're going to let any "nextPage" sit until the verification complete page, at which
+                                // point you'll have the option to continue on (back) to that page.
+                                //
+                                res.redirect("/signup-complete")
                             }
                         });
                     }
@@ -158,15 +179,34 @@ exports.login = function(req, res, message)
                 if (user.isPasswordValid(post.password))
                 {
                     // Winner!
-                    setSessionUser(req.session, user);
-
+                    setSessionUser(req.session, user, res);
+                    
                     var nextPage = "/"; // default
+                    if (req.headers.host.indexOf("support.synchro.io") == 0)
+                    {
+                        // If we're logging in from our ZenDesk Help Center, we need to fully specify the default
+                        // next page (so we don't end up at support.synchro.io instead of synchro.io).
+                        nextPage = "https://synchro.io/";
+                    }
+
                     if (req.session.nextPage)
                     {
                         nextPage = req.session.nextPage;
                         req.session.nextPage = null;
                     }
-                    res.redirect(nextPage);
+                    
+                    // Only do ZenDesk SSO if configured...
+                    //                    
+                    if (zendeskSharedKey)
+                    {
+                        // !!! This only seems to log in to Zendesk if nextPage is in the Help Center (opened ticked with ZenDesk about this)
+                        //
+                        doZendeskLogin(req, res, nextPage);
+                    }
+                    else
+                    {
+                        res.redirect(nextPage);
+                    }
                 }
                 else
                 {
@@ -191,7 +231,87 @@ exports.login = function(req, res, message)
 
 exports.logout = function(req, res)
 {
-    clearSessionUser(req.session);
+    if (zendeskSharedKey)
+    {
+        // On logout from our site we redirect to: <subdomain>.zendesk.com/access/logout, which
+        // will log the user of Zendesk, then in turn redirect to the logout endpoint we defined
+        // in Zendesk, which resolves to the zendeskLogout function below.
+        //
+        var redirect = zendeskUri + 'access/logout';
+        res.redirect(redirect);
+    }
+    else
+    {
+        // Not integrated with ZenDesk - go straigh to real logout...
+        //
+        zendeskLogout(req, res);
+    }
+}
+
+// For JWT SSO (Zendesk)
+// https://github.com/zendesk/zendesk_jwt_sso_examples/blob/master/node_jwt.js
+// https://github.com/hokaccha/node-jwt-simple
+//
+
+// Logout from JS: https://gist.github.com/skipjac/1027314 (???)
+//
+//     Doing: https://support.synchro.io/access/logout.json?callback=zendeskLogout
+//     Navigates to: https://support.synchro.io/access/logout?callback=zendeskLogout&format=json&logout_domains%5B%5D=STOP
+//     Which emits: zendeskLogout({"success":true})
+//
+// Logged-in user: https://support.synchro.io/api/v2/users/me.json
+
+
+function doZendeskLogin(req, res, return_to)
+{
+    console.log("Host: " + req.headers.host);
+    var session = req.session;
+    var payload = 
+    {
+        iat: (new Date().getTime() / 1000),
+        jti: uuid.v4(),
+        name: session.username || session.email,
+        email: session.email
+    };
+    
+    // Encode payload and redirect to Zendesk login endpoint...
+    //
+    var token = jwt.encode(payload, zendeskSharedKey);
+    var redirect = zendeskUri + 'access/jwt?jwt=' + token;
+    if (return_to)
+    {
+        redirect += '&return_to=' + encodeURIComponent(return_to);
+    }    
+    res.writeHead(302, { 'Location': redirect });
+    res.end();
+}
+
+exports.zendeskLogin = function(req, res)
+{
+    // Zendesk: "This is the URL that Zendesk will redirect your users to for remote authentication"
+    //    
+    var query = url.parse(req.url, true).query;
+    var return_to = query['return_to'];
+
+    var session = req.session;
+    if (!session.userid)
+    {
+        // Not logged in to our site, so go log in now...
+        //
+        session.nextPage = return_to;
+        exports.login(req, res);
+    }
+    else
+    {
+        doZendeskLogin(req, res, return_to);
+    }
+}
+
+exports.zendeskLogout = function(req, res)
+{
+    // Zendesk: "This is the URL that Zendesk will redirect your users to after they sign out"
+    //
+    clearSessionUser(req.session, res);
     req.flash("info", "You have been signed out");
     res.redirect('/');
 }
@@ -207,6 +327,54 @@ exports.requireSignedIn = function(req, res, next)
     else 
     {
         next();
+    }
+}
+
+exports.manageAccount = function (req, res, next)
+{
+    var page = "account";
+    var locals = { session: req.session, post: req.body };
+    
+    if (req.method == "POST")
+    {
+        userModel.getUser(req.session.userid, function (err, user)
+        {
+            if (err)
+            {
+                req.flash("warn", "Error looking up logged in user");
+                res.render(page, locals);
+            }
+            else if (!user)
+            {
+                // User didn't exists
+                req.flash("warn", "Error looking up user logged in user, account not found");
+                res.render(page, locals);
+            }
+            else
+            {
+                // Got logged-in user
+                //
+                // !!! Update account info (username/organization) from post here...
+                //
+                user.update(function (err)
+                {
+                    if (err)
+                    {
+                        req.flash("warn", "Error updating account information");
+                        res.render(page, locals);
+                    }
+                    else
+                    {
+                        req.flash("info", "Account information successfully updated");
+                        res.render(page, { session: req.session }); // !!! Locals?
+                    }
+                });
+            }
+        });
+    }
+    else
+    {
+        res.render(page, { session: req.session });
     }
 }
 
@@ -322,17 +490,16 @@ exports.verifyAccount = function (req, res, next)
                         }
                         else if (req.session.userid && (req.session.userid != user.userid))
                         {
-                            req.flash("info", "The account email address: " + user.email + " has been verified, but note that this is not the email address associated with the account to which you are currently logged in");
-                            res.redirect('/');
+                            req.flash("info", "The verified address was not for the currently logged in account");
+                            res.redirect('/verify-complete');
                         }
                         else
                         {
-                            req.flash("info", "The account email address: " + user.email + " has been verified");
                             if (req.session.userid && (req.session.userid == user.userid))
                             {
-                                setSessionUser(req.session, user); // update verification in session
+                                setSessionUser(req.session, user, res); // update verification in session
                             }
-                            res.redirect('/');
+                            res.redirect('/verify-complete');
                         }
                     });
                 }
@@ -519,7 +686,7 @@ exports.resetPassword = function (req, res, next)
                             }
                             
                             req.session.loginAs = req.session.email;
-                            clearSessionUser(req.session);
+                            clearSessionUser(req.session, res);
                             req.flash("info", "Password successfully reset, please log in now.");
                             res.redirect('login');
                         }
@@ -557,7 +724,7 @@ exports.resetPassword = function (req, res, next)
                     {
                         req.flash("warn", "The password reset code corresponds to an account other than the one to which you were logged in");
                         req.session.loginAs = req.session.email;
-                        clearSessionUser(req.session);
+                        clearSessionUser(req.session, res);
                     }
                     res.render(page, locals);
                 }
@@ -637,7 +804,13 @@ exports.dist = function (req, res, next)
         }
         else
         {
-            // User found! (might want to check "verified", maybe verify clickwrap agreement, etc, in future)
+            // User found! 
+            //
+            // !!! Check verified
+            //
+            // !!! Notify Google Analytics
+            //
+            //       - We know account id and can compose a page of /dist/<filename> to make analytics results a little cleaner
             //
             blobService.getBlobToStream('dist', req.params.filename, res, function (error)
             {

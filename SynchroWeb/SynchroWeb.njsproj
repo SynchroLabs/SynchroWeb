@@ -37,6 +37,7 @@
     <Compile Include="routes\account.js" />
     <None Include="wwwsynchro.pubxml" />
     <Content Include="bin\Microsoft.NodejsTools.WebRole.dll" />
+    <Content Include="views\account.hbs" />
     <Content Include="views\changepass.hbs" />
     <Content Include="package.json" />
     <Content Include="public\images\cloud_system_256.png" />
@@ -57,14 +58,20 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="views\forgot.hbs" />
+    <Content Include="views\getstarted.hbs" />
     <Content Include="views\index.hbs" />
     <Content Include="views\layouts\default.hbs" />
     <Content Include="views\login.hbs" />
     <Content Include="views\partials\flash.hbs" />
     <Content Include="views\partials\formstyles.hbs" />
+    <Content Include="views\partials\header.hbs" />
+    <Content Include="views\pricing.hbs" />
     <Content Include="views\reset.hbs" />
     <Content Include="views\signup.hbs" />
+    <Content Include="views\signup_complete.hbs" />
+    <Content Include="views\technology.hbs" />
     <Content Include="views\verify.hbs" />
+    <Content Include="views\verify_complete.hbs" />
     <Content Include="Web.config" />
     <Content Include="Web.Debug.config" />
     <Content Include="bin\ChangeConfig.ps1" />

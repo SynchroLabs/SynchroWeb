@@ -1,0 +1,15 @@
+﻿{{#content "pageStyles" }}
+    {{> formstyles}}
+{{/content}}
+
+<div class="container">
+    {{> flash}}
+    <form class="form-account" role="form" action="/changepass" method="post">
+        <h2 class="form-account-heading">Account Settings</h2>
+        <label for="username">Name</label>
+        <input type="text" class="form-control" name="username" value="{{post.username}}">
+        <label for="organization">Organization</label>
+        <input type="text" class="form-control" name="organization" value="{{post.organization}}">
+        <button class="btn btn-lg btn-primary btn-block" type="submit">Save</button>
+    </form>
+</div> <!-- /container -->

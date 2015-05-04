@@ -1,0 +1,11 @@
+﻿{{#content "pageStyles" }}
+  {{> formstyles}}
+{{/content}}
+
+<div class="container">
+    <h2>Account Verified</h2>
+    <p>The email address has been verified.  Thank you!</p>
+    {{#if nextPage}}
+    <p>You can <a href="{{nextPage}}">Click Here</a> to return to the page that required you to be logged in.</p>
+    {{/if}}
+</div>
