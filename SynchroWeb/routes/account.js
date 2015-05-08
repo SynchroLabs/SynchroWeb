@@ -36,16 +36,18 @@ exports.isSynchroIo = function ()
 
 function setSessionUser(session, user, res)
 {
+    session.username = user.name;
     session.userid = user.userid;
     session.email = user.email;
     session.verified = user.verified;
-
-    // !!! Let Google Anaytics know the userid
 }
 
 function clearSessionUser(session, res)
 {
-    // This will still leave other session (session cookie) values, like flash messages, nextPage, etc, just FYI
+    // This will still leave other session (session cookie) values, like flash messages, 
+    // nextPage, etc, just FYI.
+    //    
+    delete session.username;    
     delete session.userid;
     delete session.email;
     delete session.verified;
@@ -62,8 +64,8 @@ function sendVerificationEmail(req, user, callback)
         fromname: 'Synchro Admin',
         from: 'noreply@synchro.io',
         subject: 'Synchro.io Email Verification',
-        text: 'An account was created on Synchro.io with this email address.  To verify, go to this page: ' + recoveryLink,
-        html: 'An account was created on Synchro.io with this email address.  <a href="' + recoveryLink + '">Click here to verify this email address</a>',
+        text: 'An account on Synchro.io has been associated with this email address.  The verification code is: ' + user.verificationCode + '.  To verify this email address, go to this page: ' + recoveryLink,
+        html: 'An account on Synchro.io has been associated with this email address.  The verification code is: ' + user.verificationCode + '.  <a href="' + recoveryLink + '">Click here to verify this email address</a>',
     }
     
     sendgrid.send(message, function (err, json)
@@ -99,53 +101,78 @@ exports.signup = function (req, res, message)
     var locals = { session: req.session, post: req.body };
     
     var post = req.body;
-    if (post && post.username)
+    if (post && post.email)
     {
-        userModel.getUserForKey("email", post.username, function (err, user)
+        if (!post.email || !post.password || !post.password2)
         {
-            if (err)
+            req.flash("warn", "Email, Password, and new Password Verification are all required");
+            res.render(page, locals);
+        }
+        else if (post.password != post.password2)
+        {
+            req.flash("warn", "Password and password verification are not the same");
+            res.render(page, locals);
+        }
+        else
+        {
+            userModel.getUserForKey("email", post.email, function (err, user)
             {
-                req.flash("warn", "Error checking to see if account already existed");
-                res.render(page, locals);
-            }
-            else if (user)
-            {
-                req.flash("warn", "An account with that email address already exists");
-                res.render(page, locals);
-            }
-            else
-            {
-                userModel.createUser(post.username, post.password, function (err, user)
+                if (err)
                 {
-                    if (!err)
+                    req.flash("warn", "Error checking to see if account already existed");
+                    res.render(page, locals);
+                }
+                else if (user)
+                {
+                    req.flash("warn", "An account with that email address already exists");
+                    res.render(page, locals);
+                }
+                else
+                {
+                    var newUser =
                     {
-                        setSessionUser(req.session, user, res);                        
-                        
-                        sendVerificationEmail(req, user, function (err, json)
+                        name: post.name, 
+                        organization: post.organization,
+                        email: post.email, 
+                        password: post.password
+                    }
+
+                    userModel.createUser(newUser, function (err, user)
+                    {
+                        if (!err)
                         {
-                            if (err)
+                            setSessionUser(req.session, user, res);
+                            
+                            sendVerificationEmail(req, user, function (err, json)
                             {
-                                req.flash("warn", "Failed to send account verification email");
-                                console.log("Sendgrid failure:", err);
-                                res.render(page, locals);
-                            }
-                            else
-                            {
-                                // We're going to let any "nextPage" sit until the verification complete page, at which
-                                // point you'll have the option to continue on (back) to that page.
-                                //
-                                res.redirect("/signup-complete")
-                            }
-                        });
-                    }
-                    else
-                    {
-                        req.flash("warn", "Account could not be created");
-                        res.render(page, locals);
-                    }
-                });
-            }
-        });
+                                if (err)
+                                {
+                                    req.flash("warn", "Failed to send account verification email.  Please visit your Account page to resent it.");
+                                    console.log("Sendgrid failure:", err);
+                                    res.redirect("/signup-complete");
+                                }
+                                else
+                                {
+                                    // We're going to let any "nextPage" sit until the verification complete page, at which
+                                    // point you'll have the option to continue on (back) to that page.
+                                    //
+                                    // Note: Since account creation isn't really complete until the email is verified, we aren't going to follow
+                                    //       any nextPage chaining (or bother doing an SSO to ZenDesk).  The user is free, or course, to navigate
+                                    //       wherever they want, including the Help Center, before verifying, but we're not going to encourage it.
+                                    //
+                                    res.redirect("/signup-complete");
+                                }
+                            });
+                        }
+                        else
+                        {
+                            req.flash("warn", "Account could not be created");
+                            res.render(page, locals);
+                        }
+                    });
+                }
+            });
+        }
     }
     else
     {
@@ -182,13 +209,6 @@ exports.login = function(req, res, message)
                     setSessionUser(req.session, user, res);
                     
                     var nextPage = "/"; // default
-                    if (req.headers.host.indexOf("support.synchro.io") == 0)
-                    {
-                        // If we're logging in from our ZenDesk Help Center, we need to fully specify the default
-                        // next page (so we don't end up at support.synchro.io instead of synchro.io).
-                        nextPage = "https://synchro.io/";
-                    }
-
                     if (req.session.nextPage)
                     {
                         nextPage = req.session.nextPage;
@@ -224,6 +244,27 @@ exports.login = function(req, res, message)
             locals.post = { email: req.session.loginAs };
             delete req.session.loginAs;
         }
+        
+        if (!req.session.nextPage)
+        {
+            // After login, send them back to whence they came.  Note that if they get to login via a redirect from
+            // a page that requires the user to be logged in, the nextPage will already be set.  This particular logic
+            // should only apply when the user chooses the login link from the header.
+            //
+            if (req.headers.referer)
+            {
+                req.session.nextPage = req.headers.referer;
+            }
+            else if (req.headers.host && req.headers.host.indexOf("support.synchro.io") == 0)
+            {
+                // If we're logging in from the login link in the "Synchro" header of our Help Center (not to be
+                // confused with logging in from the Help Center via SSO), and for whatever reason we do not have a
+                // Referer header to go back to, we need to fully specify the nextPage (we'll chose the landing page
+                // of the Help Center).
+                //
+                req.session.nextPage = "https://support.synchro.io/hc/en-us";
+            }
+        }
 
         res.render(page, locals);
     }
@@ -244,36 +285,34 @@ exports.logout = function(req, res)
     {
         // Not integrated with ZenDesk - go straigh to real logout...
         //
-        zendeskLogout(req, res);
+        exports.zendeskLogout(req, res);
     }
 }
 
-// For JWT SSO (Zendesk)
-// https://github.com/zendesk/zendesk_jwt_sso_examples/blob/master/node_jwt.js
-// https://github.com/hokaccha/node-jwt-simple
+// Zendesk JS API
 //
-
-// Logout from JS: https://gist.github.com/skipjac/1027314 (???)
+//   Log out via JS: https://support.synchro.io/access/logout.json returns {"success":true}
+//   Logged-in user: https://support.synchro.io/api/v2/users/me.json
 //
-//     Doing: https://support.synchro.io/access/logout.json?callback=zendeskLogout
-//     Navigates to: https://support.synchro.io/access/logout?callback=zendeskLogout&format=json&logout_domains%5B%5D=STOP
-//     Which emits: zendeskLogout({"success":true})
-//
-// Logged-in user: https://support.synchro.io/api/v2/users/me.json
-
 
 function doZendeskLogin(req, res, return_to)
 {
-    console.log("Host: " + req.headers.host);
+    // For JWT SSO (Zendesk)
+    // https://github.com/zendesk/zendesk_jwt_sso_examples/blob/master/node_jwt.js
+    // https://github.com/hokaccha/node-jwt-simple
+    //
     var session = req.session;
     var payload = 
     {
         iat: (new Date().getTime() / 1000),
         jti: uuid.v4(),
+        external_id: session.userid,
         name: session.username || session.email,
         email: session.email
     };
     
+    // console.log("Logging in to ZenDesk with external_id: " + payload.external_id + " and email address: " + payload.email);
+
     // Encode payload and redirect to Zendesk login endpoint...
     //
     var token = jwt.encode(payload, zendeskSharedKey);
@@ -335,46 +374,164 @@ exports.manageAccount = function (req, res, next)
     var page = "account";
     var locals = { session: req.session, post: req.body };
     
-    if (req.method == "POST")
+    userModel.getUser(req.session.userid, function (err, user)
     {
-        userModel.getUser(req.session.userid, function (err, user)
+        if (err)
         {
-            if (err)
+            req.flash("warn", "Error looking up logged in user");
+            res.render(page, locals);
+        }
+        else if (!user)
+        {
+            // User didn't exists
+            req.flash("warn", "Error looking up user logged in user, account not found");
+            res.render(page, locals);
+        }
+        else
+        {
+            locals.user = user;
+            
+            if (req.method == "POST")
             {
-                req.flash("warn", "Error looking up logged in user");
-                res.render(page, locals);
-            }
-            else if (!user)
-            {
-                // User didn't exists
-                req.flash("warn", "Error looking up user logged in user, account not found");
-                res.render(page, locals);
-            }
-            else
-            {
+                var post = req.body;
+
                 // Got logged-in user
                 //
-                // !!! Update account info (username/organization) from post here...
-                //
+                user.name = post.name;
+                user.organization = post.organization;
                 user.update(function (err)
                 {
                     if (err)
                     {
                         req.flash("warn", "Error updating account information");
-                        res.render(page, locals);
                     }
                     else
                     {
+                        setSessionUser(req.session, user, res);
                         req.flash("info", "Account information successfully updated");
-                        res.render(page, { session: req.session }); // !!! Locals?
                     }
+                    res.render(page, locals);
                 });
             }
-        });
+            else
+            {
+                locals.post = { name: user.name, organization: user.organization };
+                res.render(page, locals);
+            }
+        }
+    });
+}
+
+exports.changeEmail = function (req, res, next)
+{
+    var page = "changeemail";
+    var locals = { session: req.session, post: req.body };
+
+    if (req.method == "POST")
+    {
+        if (!req.body.newemail || !req.body.newemail2 || !req.body.password)
+        {
+            req.flash("warn", "New email address, new email address verification, and password are all required");
+            res.render(page, locals);
+        }
+        else if (req.body.newemail != req.body.newemail2)
+        {
+            req.flash("warn", "New email address and new email address verification are not the same");
+            res.render(page, locals);
+        }
+        else
+        {
+            userModel.getUser(req.session.userid, function (err, user)
+            {
+                if (err)
+                {
+                    req.flash("warn", "Error looking up logged in user");
+                    res.render(page, locals);
+                }
+                else if (!user)
+                {
+                    req.flash("warn", "Error looking up user logged in user, account not found");
+                    res.render(page, locals);
+                }
+                else
+                {
+                    // Got logged-in user
+                    //
+                    if (user.isPasswordValid(req.body.password))
+                    {
+                        if (user.email == req.body.newemail)
+                        {
+                            req.flash("warn", "Account email address is already set to the specified address");
+                            res.render(page, locals);
+                        }
+                        else
+                        {
+                            userModel.getUserForKey("email", req.body.newemail, function (err, user2)
+                            {
+                                if (err)
+                                {
+                                    req.flash("warn", "Error checking to see if account with the specified email address already existed");
+                                    res.render(page, locals);
+                                }
+                                else if (user2)
+                                {
+                                    req.flash("warn", "An account with that email address already exists");
+                                    res.render(page, locals);
+                                }
+                                else
+                                {
+                                    user.email = req.body.newemail;
+                                    user.setVerified(false);
+                                    user.update(function (err)
+                                    {
+                                        if (err)
+                                        {
+                                            req.flash("warn", "Error updating email address");
+                                            res.render(page, locals);
+                                        }
+                                        else
+                                        {
+                                            setSessionUser(req.session, user, res);
+
+                                            sendVerificationEmail(req, user, function (err, json)
+                                            {
+                                                if (err)
+                                                {
+                                                    req.flash("warn", "Email address updated, but failed to send account verification email");
+                                                    console.log("Sendgrid failure:", err);
+                                                    
+                                                    // In this specified failure case, we redirect to the "account" page, since it has a 
+                                                    // "resend verification" button.
+                                                    //
+                                                    res.redirect("/account");
+                                                }
+                                                else
+                                                {
+                                                    // Change email address should always be coming from "account", so we'll go back the (and
+                                                    // skip the nextPage business).
+                                                    //
+                                                    req.flash("info", "Email address successfully updated and verification message sent");
+                                                    res.redirect("/account")
+                                                }
+                                            });
+                                        }
+                                    });
+                                }
+                            });
+                        }
+                    }
+                    else
+                    {
+                        req.flash("warn", "Password was not correct");
+                        res.render(page, locals);
+                    }
+                }
+            });
+        }
     }
     else
     {
-        res.render(page, { session: req.session });
+        res.render('changeemail', { session: req.session });
     }
 }
 
@@ -426,8 +583,11 @@ exports.changePassword = function (req, res, next)
                             }
                             else
                             {
+                                // We'll return to "account" on success, since that's the only place we could have come
+                                // from (don't need to use nextPage for that).
+                                //
                                 req.flash("info", "Password successfully updated");
-                                res.redirect("/");
+                                res.redirect("/account");
                             }
                         });
                     }
@@ -480,7 +640,7 @@ exports.verifyAccount = function (req, res, next)
                 }
                 else
                 {   
-                    user.setVerified();
+                    user.setVerified(true);
                     user.update(function (err)
                     {
                         if (err)
@@ -488,17 +648,37 @@ exports.verifyAccount = function (req, res, next)
                             req.flash("warn", "Error saving user account verification");
                             res.render(page, locals);
                         }
-                        else if (req.session.userid && (req.session.userid != user.userid))
+                        else if (req.session.userid) // Currently logged in
                         {
-                            req.flash("info", "The verified address was not for the currently logged in account");
-                            res.redirect('/verify-complete');
-                        }
-                        else
-                        {
-                            if (req.session.userid && (req.session.userid == user.userid))
+                            if (req.session.userid == user.userid)
                             {
+                                // Validated for logged in user
+                                //
                                 setSessionUser(req.session, user, res); // update verification in session
+                                
+                                if (!req.session.nextPage && req.headers.referer.indexOf("/account") >= 0)
+                                {
+                                    // If we came from "account", we want to be able to continue back there after confirmation 
+                                    // of verification.
+                                    //
+                                    req.session.nextPage = "/account";
+                                }
+
+                                res.redirect('/verify-complete');
                             }
+                            else
+                            {
+                                // Validated for different user than logged in user
+                                req.session.nextPage = null;
+                                req.flash("info", "The verified address was not for the currently logged in account");
+                                res.redirect('/verify-complete');
+                            }
+                        }
+                        else // Not currently logged in
+                        {
+                            // Validated, but not currently logged in
+                            //
+                            req.session.nextPage = null;
                             res.redirect('/verify-complete');
                         }
                     });
@@ -526,13 +706,13 @@ exports.resendVerification = function (req, res, next)
         if (err)
         {
             req.flash("warn", "Error looking up logged in user");
-            res.render(page, locals);
+            res.redirect('back');
         }
         else if (!user)
         {
             // User didn't exists
             req.flash("warn", "Error looking up user logged in user, account not found");
-            res.render(page, locals);
+            res.redirect('back');
         }
         else
         {
@@ -806,12 +986,15 @@ exports.dist = function (req, res, next)
         {
             // User found! 
             //
+
             // !!! Check verified
             //
-            // !!! Notify Google Analytics
+
+            // Notify Google Analytics
             //
-            //       - We know account id and can compose a page of /dist/<filename> to make analytics results a little cleaner
-            //
+            var visitor = analytics('UA-62082932-1', user.userid);
+            visitor.pageview("/dist/" + req.params.filename).send();
+
             blobService.getBlobToStream('dist', req.params.filename, res, function (error)
             {
                 // getBlobToStream just happens to propagate all of the content-related headers from the

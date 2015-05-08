@@ -38,6 +38,7 @@
     <None Include="wwwsynchro.pubxml" />
     <Content Include="bin\Microsoft.NodejsTools.WebRole.dll" />
     <Content Include="views\account.hbs" />
+    <Content Include="views\changeemail.hbs" />
     <Content Include="views\changepass.hbs" />
     <Content Include="package.json" />
     <Content Include="public\images\cloud_system_256.png" />

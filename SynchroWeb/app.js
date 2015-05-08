@@ -122,6 +122,7 @@ app.all('/verify-complete', function (req, res)
 // Account management
 //
 app.all('/account', account.requireSignedIn, account.manageAccount);
+app.all('/changeemail', account.requireSignedIn, account.changeEmail);
 app.all('/changepass', account.requireSignedIn, account.changePassword);
 app.all('/resend', account.requireSignedIn, account.resendVerification);
 app.all('/forgot', account.forgotPassword);

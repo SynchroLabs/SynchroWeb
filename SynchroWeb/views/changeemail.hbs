@@ -1,0 +1,21 @@
+﻿{{#content "pageStyles" }}
+    {{> formstyles}}
+{{/content}}
+
+<div class="container">
+    {{> flash}}
+    <form class="form-account" role="form" action="/changeemail" method="post" autocomplete="off">
+        <!-- fake fields are a workaround for chrome autofill getting the wrong fields -->
+        <input style="display:none" type="text" name="fakeusernameremembered" />
+        <input style="display:none" type="password" name="fakepasswordremembered" />
+
+        <h3 class="form-account-heading">Change Email Address</h3>
+        <label for="newemail">New Email Address</label>
+        <input type="email" class="form-control" name="newemail" value="{{post.newmail}}" required autofocus>
+        <label for="newemail2">Verify New Email Address</label>
+        <input type="email" class="form-control" name="newemail2" value="{{post.newemail2}}" required>
+        <label for="password">Password</label>
+        <input type="password" class="form-control" name="password" value="{{post.password}}" required>
+        <button class="btn btn-lg btn-primary btn-block" type="submit">Set New Address</button>
+    </form>
+</div> <!-- /container -->

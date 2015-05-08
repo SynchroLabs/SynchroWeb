@@ -33,6 +33,8 @@ module.exports = function (params)
         this.entity = entity;
         this.userid = entity.RowKey._;
         this.email = entity.email._;
+        this.name = entity.name ? entity.name._ : null;
+        this.organization = entity.organization ? entity.organization._ : null;
         this.passwordHash = entity.passwordHash._;
         this.secret = entity.secret._;
         this.verificationCode = entity.verificationCode ? entity.verificationCode._ : null;
@@ -41,33 +43,43 @@ module.exports = function (params)
         this.recoveryCodeIssued = entity.recoveryCodeIssued ? entity.recoveryCodeIssued._ : null;
     }
     
-    User.prototype.setPassword = function (password)
+    User.prototype.setPassword = function(password)
     {
         this.passwordHash = bcrypt.hashSync(password);
         this.entity.passwordHash = entGen.String(this.passwordHash);
     }    
 
-    User.prototype.isPasswordValid = function (password)
+    User.prototype.isPasswordValid = function(password)
     {
         return bcrypt.compareSync(password, this.passwordHash);
     }
     
-    User.prototype.setVerified = function()
+    User.prototype.setVerified = function(verified)
     {
-        this.verified = true;
+        this.verified = verified;
         this.entity.verified = entGen.Boolean(this.verified);
         
-        // We're going to leave the verification code even after verifying, so we can detect the case
-        // where someone attempts to re-submit a verification (so we can detect the resubmit case vs bad
-        // verification code).
-        //
-        /*
-        this.verificationCode = null;
-        if (this.entity.verificationCode)
+        if (this.verified)
         {
-            delete this.entity.verificationCode;
+            // We're going to leave the verification code even after verifying, so we can detect the case
+            // where someone attempts to re-submit a verification (so we can detect the resubmit case vs bad
+            // verification code).
+            //
+            /*
+            this.verificationCode = null;
+            if (this.entity.verificationCode)
+            {
+                delete this.entity.verificationCode;
+            }
+             */
         }
-         */
+        else
+        {
+            // If we're setting verified to false, generate a new verification code...
+            //
+            this.verificationCode = uuid.v4();
+            this.entity.verificationCode = entGen.String(this.verificationCode);
+        }
     }
 
     User.prototype.generateRecoveryCode = function()
@@ -98,8 +110,9 @@ module.exports = function (params)
     {
         // Update the entity (properties that might have been changed directly by consumer of User)
         //
-        // [currently, there are no such properties]
-        //
+        this.entity.email = entGen.String(this.email);
+        this.entity.name = entGen.String(this.name);
+        this.entity.organization = entGen.String(this.organization);
 
         // Do the update...
         tableService.updateEntity(tableName, this.entity, function (error, entity, response)
@@ -118,17 +131,24 @@ module.exports = function (params)
         });
     };
     
+    // !!! Need to poll periodically to look for accounts that have not been verified within an
+    //     interval of their creation (perhaps 1 day) so that we can cull them.
+    //
+
     var userModel = 
     {
-        createUser: function (email, password, callback)
+        createUser: function (newUser, callback)
         {
-            // user
+            // newUser { name, organization, email, password }
+            //
             var entGen = azure.TableUtilities.entityGenerator;
             var user = {
                 PartitionKey: entGen.String(partitionKey),
                 RowKey: entGen.String(uuid.v4()),
-                email: entGen.String(email),
-                passwordHash: entGen.String(bcrypt.hashSync(password)),
+                email: entGen.String(newUser.email),
+                name: entGen.String(newUser.name),
+                organization: entGen.String(newUser.organization),
+                passwordHash: entGen.String(bcrypt.hashSync(newUser.password)),
                 secret: entGen.String(uuid.v4()),
                 verificationCode: entGen.String(uuid.v4()),
                 verified: entGen.Boolean(false),

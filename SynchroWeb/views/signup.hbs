@@ -6,12 +6,17 @@
     {{> flash}}
     <form class="form-account" role="form" action="/signup" method="post">
         <h2 class="form-account-heading">New Account</h2>
-        <label for="email">Email Address</label>
-        <input type="email" class="form-control" name="username" value="{{post.username}}" required autofocus>
-        <label for="password">Password</label>
+        <label for="name">Name</label>
+        <input type="text" class="form-control" name="name" value="{{post.name}}" autofocus>
+        <label for="organization">Organization</label>
+        <input type="text" class="form-control" name="organization" value="{{post.organization}}">
+        <label for="email">Email Address *</label>
+        <input type="email" class="form-control" name="email" value="{{post.email}}" required>
+        <label for="password">Password *</label>
         <input type="password" class="form-control" name="password" value="{{post.password}}" required>
-        <label for="password2">Verify Password</label>
+        <label for="password2">Verify Password *</label>
         <input type="password" class="form-control" name="password2" value="{{post.password2}}" required>
+        <label>* Required</label>
         <button class="btn btn-lg btn-primary btn-block" type="submit">Create Account</button>
         <br />
         <a href="/login">I already have an account</a>
