@@ -32,6 +32,10 @@ app.engine('hbs', hbs.express3({
 app.set('view engine', 'hbs');
 app.set('views', __dirname + '/views');
 
+// CLI auth endpoint, located before middleware to avoid the request being logged.
+//
+app.all('/getsecret', account.getSecret);
+
 app.use(express.cookieParser());
 app.use(express.cookieSession({ key: 'synchro_session', secret: 'sdf89f89fd7sdf7sdf', cookie: { domain: account.isSynchroIo() ? '.synchro.io' : null, httpOnly: false, maxAge: 31 * 24 * 60 * 60 * 1000 } })); // 31 days, in milliseconds
 app.use(expressFlash());
@@ -128,9 +132,8 @@ app.all('/resend', account.requireSignedIn, account.resendVerification);
 app.all('/forgot', account.forgotPassword);
 app.all('/reset',  account.resetPassword);
 
-// CLI integration endpoints
+// CLI download endpoint
 //
-app.all('/getsecret', account.getSecret);
 app.get('/dist/:id/:filename', account.dist);
 
 // The Server...
