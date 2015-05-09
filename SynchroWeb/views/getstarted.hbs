@@ -4,5 +4,28 @@
 
 <div class="container">
     <h2>Getting Started</h2>
-    <p>This is how you get started</p>
+    <p><strong>Register</strong></p>
+    {{#if session.userid}}
+    <p>Register for an account on Synchro.io - Completed!</p>
+    {{else}}
+    <p><a href="signup">Register</a> for an account on Synchro.io</p>
+    {{/if}}
+    <p><strong>Install Node.js</strong></p>
+    <p>If you haven't already done so, install <a href="https://nodejs.org/download/">Node.js</a></p>
+    <p><strong>Install Synchro</strong></p>
+    <pre><code>$ npm install -g synchro</code></pre>
+    <p><strong>Create a new Synchro app</strong></p>
+    <p>Create a directory and switch to it, then in the new directory:</p>
+    <pre><code>$ synchro init
+$ synchro new hello</code></pre>
+    <p>Note: If it is your first time initializing a Synchro app on a given computer, you will be prompted for your Synchro.io account email address and password.</p>
+    <p><strong>Run Synchro</strong></p>
+    <pre><code>$ synchro start</code></pre>
+    <p>This will start a Node.js server instance running the Synchro server, which will be serving your new app.</p>
+    <p><strong>Verify that Node.js and Synchro are running</strong></p>
+    <p>Using a web browser, navigate to the host/port on which Node.js and Synchro are running.  This will typically be <a href="http://localhost:1337">http://localhost:1337</a>.</p>
+    <p><strong>Download the Synchro client</strong></p>
+    <p>When you are ready to deploy your app to your end users, you will use Synchro.io to create custom branded application packages for each desired mobile platform.
+    For development and testing purposes, you will just download the generic Synchro client application onto your mobile device from the appropriate app store, and then point
+    it to your server endpoint.</p>
 </div>

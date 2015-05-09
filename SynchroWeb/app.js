@@ -32,15 +32,16 @@ app.engine('hbs', hbs.express3({
 app.set('view engine', 'hbs');
 app.set('views', __dirname + '/views');
 
-// CLI auth endpoint, located before middleware to avoid the request being logged.
-//
-app.all('/getsecret', account.getSecret);
-
 app.use(express.cookieParser());
 app.use(express.cookieSession({ key: 'synchro_session', secret: 'sdf89f89fd7sdf7sdf', cookie: { domain: account.isSynchroIo() ? '.synchro.io' : null, httpOnly: false, maxAge: 31 * 24 * 60 * 60 * 1000 } })); // 31 days, in milliseconds
 app.use(expressFlash());
 app.use(express.favicon());
-app.use(log4js.connectLogger(logger, { level: 'auto' })); //app.use(express.logger('dev'));
+
+// Log4js logger - nolog for /getsecret (so we don't expose email/password URL params in logs)
+//
+app.use(log4js.connectLogger(logger, { level: 'auto', nolog: '^/getsecret' }));
+//app.use(express.logger('dev'));
+
 app.use(express.query());
 app.use(express.json());
 app.use(express.urlencoded());
@@ -59,7 +60,7 @@ app.get('/', function (req, res)
     var locals = { session: req.session, pageIndex: true };
     
     // For device/os detection we originally used: https://www.npmjs.com/package/mobile-detect, but
-    // it didn't support Windows, so we roll our own (not too bad since all we care about is OS).
+    // it didn't support Windows, so we roll our own (not too bad since all we care about is the OS).
     //
     // For user-agent guidance and samples, see: http://www.webapps-online.com/online-tools/user-agent-strings/dv
     //
@@ -131,6 +132,10 @@ app.all('/changepass', account.requireSignedIn, account.changePassword);
 app.all('/resend', account.requireSignedIn, account.resendVerification);
 app.all('/forgot', account.forgotPassword);
 app.all('/reset',  account.resetPassword);
+
+// CLI auth endpoint
+//
+app.all('/getsecret', account.getSecret);
 
 // CLI download endpoint
 //
