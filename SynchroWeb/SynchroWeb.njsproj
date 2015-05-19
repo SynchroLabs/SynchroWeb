@@ -62,6 +62,7 @@
     <Content Include="views\getstarted.hbs" />
     <Content Include="views\index.hbs" />
     <Content Include="views\layouts\default.hbs" />
+    <Content Include="views\license.hbs" />
     <Content Include="views\login.hbs" />
     <Content Include="views\partials\flash.hbs" />
     <Content Include="views\partials\formstyles.hbs" />

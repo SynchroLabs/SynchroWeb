@@ -132,6 +132,7 @@ app.all('/changepass', account.requireSignedIn, account.changePassword);
 app.all('/resend', account.requireSignedIn, account.resendVerification);
 app.all('/forgot', account.forgotPassword);
 app.all('/reset',  account.resetPassword);
+app.all('/license', account.license);
 
 // CLI auth endpoint
 //

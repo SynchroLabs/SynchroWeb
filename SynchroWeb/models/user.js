@@ -41,6 +41,13 @@ module.exports = function (params)
         this.verified = entity.verified._;
         this.recoveryCode = entity.recoveryCode ? entity.recoveryCode._ : null;
         this.recoveryCodeIssued = entity.recoveryCodeIssued ? entity.recoveryCodeIssued._ : null;
+
+        this.licenseAgreedDate = entity.licenseAgreedDate ? entity.licenseAgreedDate._ : null;
+        this.licenseAgreedName = entity.licenseAgreedName ? entity.licenseAgreedName._ : null;
+        this.licenseAgreedTitle = entity.licenseAgreedTitle ? entity.licenseAgreedTitle._ : null;
+        this.licenseAgreedOrganization = entity.licenseAgreedOrganization ? entity.licenseAgreedOrganization._ : null;
+        this.licenseAgreedVersion = entity.licenseAgreedVersion ? entity.licenseAgreedVersion._ : null;
+        this.licenseAgreed = this.licenseAgreedDate != null;
     }
     
     User.prototype.setPassword = function(password)
@@ -80,6 +87,29 @@ module.exports = function (params)
             this.verificationCode = uuid.v4();
             this.entity.verificationCode = entGen.String(this.verificationCode);
         }
+    }
+    
+    User.prototype.setLicenseAgreed = function(name, title, organization, version)
+    {
+        // licenseAgreed - Composed, read only (based on whether licenseAgreedDate is set)
+        // licenseAgreedDate
+        // licenseAgreedName
+        // licenseAgreedTitle
+        // licenseAgreedOrganization
+        // licenseAgreedVersion
+        
+        this.licenseAgreed = true;
+        this.licenseAgreedDate = new Date();
+        this.licenseAgreedName = name;
+        this.licenseAgreedTitle = title;
+        this.licenseAgreedOrganization = organization;
+        this.licenseAgreedVersion = version;
+        
+        this.entity.licenseAgreedDate = entGen.DateTime(this.licenseAgreedDate);
+        this.entity.licenseAgreedName = entGen.String(this.licenseAgreedName);
+        this.entity.licenseAgreedTitle = entGen.String(this.licenseAgreedTitle);
+        this.entity.licenseAgreedOrganization = entGen.String(this.licenseAgreedOrganization);
+        this.entity.licenseAgreedVersion = entGen.String(this.licenseAgreedVersion);
     }
 
     User.prototype.generateRecoveryCode = function()

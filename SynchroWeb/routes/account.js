@@ -40,6 +40,7 @@ function setSessionUser(session, user, res)
     session.userid = user.userid;
     session.email = user.email;
     session.verified = user.verified;
+    session.licenseAgreed = user.licenseAgreed;
 }
 
 function clearSessionUser(session, res)
@@ -51,6 +52,7 @@ function clearSessionUser(session, res)
     delete session.userid;
     delete session.email;
     delete session.verified;
+    delete session.licenseAgreed;
 }
 
 function sendVerificationEmail(req, user, callback)
@@ -422,6 +424,77 @@ exports.manageAccount = function (req, res, next)
     });
 }
 
+exports.license = function (req, res, next)
+{
+    var page = "license";
+    var locals = { session: req.session, post: req.body };
+    
+    if (!req.session.userid)
+    {
+        // Not logged in - show read-only (no form) version...
+        res.render(page, locals);
+    }
+    else
+    {
+        // Logged in user
+        //
+        userModel.getUser(req.session.userid, function (err, user)
+        {
+            if (err)
+            {
+                req.flash("warn", "Error looking up logged in user");
+                res.render(page, locals);
+            }
+            else if (!user)
+            {
+                // User didn't exists
+                req.flash("warn", "Error looking up user logged in user, account not found");
+                res.render(page, locals);
+            }
+            else
+            {
+                // Got logged-in user
+                //
+                locals.user = user;
+                
+                if (req.method == "POST")
+                {
+                    var post = req.body;
+                    
+                    if (!post.licenseAgreedName)
+                    {
+                        req.flash("warn", "Name of person agreeing to agreement is required");
+                        res.render(page, locals);
+                    }
+                    else
+                    {
+                        user.setLicenseAgreed(post.licenseAgreedName, post.licenseAgreedTitle, post.licenseAgreedOrganization, post.licenseAgreedVersion);
+                        user.update(function (err)
+                        {
+                            if (err)
+                            {
+                                req.flash("warn", "Error updating agreement to license");
+                            }
+                            else
+                            {
+                                setSessionUser(req.session, user, res);
+                                req.flash("info", "License Agreement successfully executed");
+                            }
+                        });
+                    }
+                    res.render(page, locals);
+                }
+                else
+                {
+                    locals.post = { licenseAgreedName: user.name, licenseAgreedOrganization: user.organization };
+                    res.render(page, locals);
+                }
+            }
+        });
+    }
+
+}
+
 exports.changeEmail = function (req, res, next)
 {
     var page = "changeemail";
@@ -656,7 +729,7 @@ exports.verifyAccount = function (req, res, next)
                                 //
                                 setSessionUser(req.session, user, res); // update verification in session
                                 
-                                if (!req.session.nextPage && req.headers.referer.indexOf("/account") >= 0)
+                                if (!req.session.nextPage && (req.headers.referer && req.headers.referer.indexOf("/account") >= 0))
                                 {
                                     // If we came from "account", we want to be able to continue back there after confirmation 
                                     // of verification.
@@ -986,32 +1059,43 @@ exports.dist = function (req, res, next)
         {
             // User found! 
             //
-
-            // !!! Check verified
-            //
-
-            // Notify Google Analytics
-            //
-            var visitor = analytics('UA-62082932-1', user.userid);
-            visitor.pageview("/dist/" + req.params.filename).send();
-
-            blobService.getBlobToStream('dist', req.params.filename, res, function (error)
+            if (!user.verified)
             {
-                // getBlobToStream just happens to propagate all of the content-related headers from the
-                // blob request to this response.
+                res.statusCode = 403;
+                res.send('Forbidden, user has not yet verified their account email address on the synchro.io website');
+            }
+            else if (!user.licenseAgreed)
+            {
+                res.statusCode = 403;
+                res.send('Forbidden, user has not yet agreed to the license agreement on the synchro.io website');
+            }
+            else
+            {
+                // Attempt download...
                 //
-                if (!error)
+
+                // Notify Google Analytics
+                var visitor = analytics('UA-62082932-1', user.userid);
+                visitor.pageview("/dist/" + req.params.filename).send();
+                
+                blobService.getBlobToStream('dist', req.params.filename, res, function (error)
                 {
-                    res.end();
-                }
-                else
-                {
-                    console.log('dist - getBlobToStream error', error);
-                    res.code = error.code;
-                    res.statusCode = error.statusCode;
-                    res.end();
-                }
-            });
+                    // getBlobToStream just happens to propagate all of the content-related headers from the
+                    // blob request to this response.
+                    //
+                    if (!error)
+                    {
+                        res.end();
+                    }
+                    else
+                    {
+                        console.log('dist - getBlobToStream error', error);
+                        res.code = error.code;
+                        res.statusCode = error.statusCode;
+                        res.end();
+                    }
+                });
+            }
         }
     });
 }

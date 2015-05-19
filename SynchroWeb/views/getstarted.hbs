@@ -8,11 +8,17 @@
     {{#if session.userid}}
     <p>Register for an account on Synchro.io - Completed!</p>
     {{else}}
-    <p><a href="signup">Register</a> for an account on Synchro.io</p>
+    <p><a href="/signup">Register</a> for an account on Synchro.io</p>
+    {{/if}}
+    <p><strong>Agree to the License</strong></p>
+    {{#if session.licenseAgreed}}
+    <p>Agree to the Subscription and License Agreement for Synchro - Completed!</p>
+    {{else}}
+    <p>Agree to the Subscription and License Agreement for Synchro <a href="/license">available here</a></p>
     {{/if}}
     <p><strong>Install Node.js</strong></p>
     <p>If you haven't already done so, install <a href="https://nodejs.org/download/">Node.js</a></p>
-    <p><strong>Install Synchro</strong></p>
+    <p><strong>Install the Synchro Command Line Interface (CLI)</strong></p>
     <pre><code>$ npm install -g synchro</code></pre>
     <p><strong>Create a new Synchro app</strong></p>
     <p>Create a directory and switch to it, then in the new directory:</p>
