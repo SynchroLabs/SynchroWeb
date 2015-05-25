@@ -3,6 +3,8 @@ var uuid = require('node-uuid');
 var azure = require('azure-storage');
 var entGen = azure.TableUtilities.entityGenerator;
 
+var logger = require('log4js').getLogger("user-model");
+
 // http://azure.microsoft.com/en-us/documentation/articles/storage-nodejs-how-to-use-table-storage/
 // http://dl.windowsazure.com/nodestoragedocs/TableService.html 
 
@@ -20,11 +22,11 @@ module.exports = function (params)
     {
         if (!error)
         {
-            console.log("Azure webuser table created or already existed");
+            logger.info("Azure webuser table created or already existed");
         }
         else
         {
-            console.log("Azure webuser table did not exist and could not be created: " + error);
+            logger.error("Azure webuser table did not exist and could not be created:", error);
         }
     });
     
@@ -149,13 +151,13 @@ module.exports = function (params)
         {
             if (!error)
             {
-                console.log("Azure updateUser - table entity updated");
+                logger.debug("Azure updateUser - table entity updated");
                 this.entity = entity;
                 callback(null);
             }
             else
             {
-                console.log("Azure updateUser - table entity update failed: " + error);
+                logger.error("Azure updateUser - table entity update failed: " + error);
                 callback(error);
             }
         });
@@ -189,12 +191,12 @@ module.exports = function (params)
             {
                 if (!error)
                 {
-                    console.log("Azure createUser - table entity inserted");
+                    logger.info("Azure createUser - table entity inserted");
                     callback(null, new User(entity));
                 }
                 else
                 {
-                    console.log("Azure createUser - table entity insertion failed: " + error);
+                    logger.error("Azure createUser - table entity insertion failed:", error);
                     callback(error);
                 }
             });
@@ -206,17 +208,17 @@ module.exports = function (params)
             {
                 if (!error)
                 {
-                    console.log("Azure getUser - table entity retrieved");
+                    logger.debug("Azure getUser - table entity retrieved");
                     callback(null, new User(entity));
                 }
                 else if (error.code === "ResourceNotFound")
                 {
-                    console.log("Azure getUser - table entity not found");
+                    logger.debug("Azure getUser - table entity not found");
                     callback(null, null);
                 }
                 else
                 {
-                    console.log("Azure getUser - table entity retrieval failed: " + error);
+                    logger.error("Azure getUser - table entity retrieval failed:", error);
                     callback(error);
                 }
             });
@@ -238,7 +240,7 @@ module.exports = function (params)
                 }
                 else
                 {
-                    logger.info("Azure deleteUser - table entity delete failed: " + error);
+                    logger.info("Azure deleteUser - table entity delete failed:", error);
                     callback(error);
                 }
             });
@@ -253,19 +255,19 @@ module.exports = function (params)
                 {
                     if (result.entries && result.entries.length > 0)
                     {
-                        console.log("Azure getUserForKey - table entity retrieved");
+                        logger.debug("Azure getUserForKey - table entity retrieved");
                         var user = new User(result.entries[0]);
                         callback(null, user);
                     }
                     else
                     {
-                        console.log("Azure getUserForKey - no matching table entity found");
+                        logger.debug("Azure getUserForKey - no matching table entity found");
                         callback(null);
                     }
                 }
                 else
                 {
-                    logger.info("Azure getUserForKey - failed: " + error);
+                    logger.error("Azure getUserForKey - failed:", error);
                     callback(error);
                 }
             });

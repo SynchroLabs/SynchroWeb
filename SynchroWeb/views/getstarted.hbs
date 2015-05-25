@@ -3,10 +3,15 @@
 {{/content}}
 
 <div class="container">
+    {{> flash}}
     <h2>Getting Started</h2>
     <p><strong>Register</strong></p>
     {{#if session.userid}}
-    <p>Register for an account on Synchro.io - Completed!</p>
+      {{#if session.verified}}
+    <p>Register for an account on Synchro.io and verify your email address - Completed!</p>
+      {{else}}
+    <p>Register for an account on Synchro.io and <a href="/account">verify your email address</a> (currently unverified)</p>
+      {{/if}}
     {{else}}
     <p><a href="/signup">Register</a> for an account on Synchro.io</p>
     {{/if}}
@@ -27,7 +32,7 @@ $ synchro new hello</code></pre>
     <p>This will install Synchro as a Node.js app in the directory, and create a new Synchro app called &quot;hello&quot;.</p>
     <p>Note: If it is your first time initializing Synchro on a given computer, you will be prompted for your Synchro.io account email address and password.</p>
     <p><strong>Run Synchro</strong></p>
-    <pre><code>$ synchro start</code></pre>
+    <pre><code>$ npm start</code></pre>
     <p>This will start a Node.js server instance running the Synchro server, which will be serving your new app.</p>
     <p><strong>Verify that Node.js and Synchro are running</strong></p>
     <p>Using a web browser, navigate to the host/port on which Node.js and Synchro are running.  This will typically be <a href="http://localhost:1337">http://localhost:1337</a>.</p>

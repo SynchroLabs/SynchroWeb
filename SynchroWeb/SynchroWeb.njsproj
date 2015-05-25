@@ -33,6 +33,7 @@
   <ItemGroup>
     <Compile Include="app.js" />
     <Compile Include="models\user.js" />
+    <Compile Include="models\zendesk.js" />
     <Compile Include="routes\index.js" />
     <Compile Include="routes\account.js" />
     <None Include="wwwsynchro.pubxml" />

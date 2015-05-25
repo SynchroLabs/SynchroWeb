@@ -2,8 +2,9 @@
 /*
  * GET home page.
  */
+var logger = require('log4js').getLogger("index");
 
 exports.index = function (req, res){
-    console.log("Session: ", req.session);
+    logger.info("Session: %j", req.session);
     res.render('index', { title: 'Synchro', session: req.session });
 };

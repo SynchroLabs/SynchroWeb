@@ -9,6 +9,8 @@ var uuid = require('node-uuid');
 var url = require('url');
 var jwt = require('jwt-simple');
 
+var logger = require('log4js').getLogger("account");
+
 nconf.env().file({ file: 'config.json' });
 
 var storageAccount = nconf.get("STORAGE_ACCOUNT");
@@ -20,9 +22,13 @@ var sendgrid = require('sendgrid')(sendgridApiUser, sendgridApiKey);
 
 var zendeskSubdomain = nconf.get("ZENDESK_SUBDOMAIN");
 var zendeskSharedKey = nconf.get("ZENDESK_SHARED_KEY");
+var zendeskApiAccount = nconf.get("ZENDESK_API_ACCOUNT");
+var zendeskApiToken = nconf.get("ZENDESK_API_TOKEN");
 var zendeskUri = 'https://' + zendeskSubdomain + '.zendesk.com/';
 
 var userModel = require('../models/user')({storageAccount: storageAccount, storageAccessKey: storageAccessKey});
+
+var zendeskModel = require('../models/zendesk')({apiAccount: zendeskApiAccount, apiToken: zendeskApiToken, subdomain: zendeskSubdomain});
 
 function isSynchroIo()
 {
@@ -145,12 +151,32 @@ exports.signup = function (req, res, message)
                         {
                             setSessionUser(req.session, user, res);
                             
+                            // New Synchro user, create a help center user...
+                            //
+                            zendeskModel.synchUser(user, function (err)
+                            {
+                                // We're not going to wait on this or make it part of our action chain on new account creation, 
+                                // simply because if it fails, it will be automatically resolved the first time the user navigates
+                                // to the help center when logged in (that logic will detect that the user is logged in and trigger
+                                // an SSO login, which will create this account if it doesn't exist).
+                                //
+                                // !!! One caveat - If this does fail here in a permanent way (say, for example, that a different user
+                                //     exists on the Zendesk side with this same email address), then *maybe* we should do something here,
+                                //     since that's going to fail in the same way with the auto-SSO (only uglier - it will actually log
+                                //     you out of the main site).
+                                //
+                                if (err)
+                                {
+                                    logger.error("Zendesk syncUser error:", err);
+                                }
+                            });
+                               
                             sendVerificationEmail(req, user, function (err, json)
                             {
                                 if (err)
                                 {
                                     req.flash("warn", "Failed to send account verification email.  Please visit your Account page to resent it.");
-                                    console.log("Sendgrid failure:", err);
+                                    logger.error("Sendgrid failure:", err);
                                     res.redirect("/signup-complete");
                                 }
                                 else
@@ -313,7 +339,7 @@ function doZendeskLogin(req, res, return_to)
         email: session.email
     };
     
-    // console.log("Logging in to ZenDesk with external_id: " + payload.external_id + " and email address: " + payload.email);
+    // logger.info("Logging in to ZenDesk with external_id: " + payload.external_id + " and email address: " + payload.email);
 
     // Encode payload and redirect to Zendesk login endpoint...
     //
@@ -354,6 +380,18 @@ exports.zendeskLogout = function(req, res)
     //
     clearSessionUser(req.session, res);
     req.flash("info", "You have been signed out");
+    
+    // Sometimes Zendesk freaks out due to some condition it doesn't like in SSO (typically when there is a data consistency
+    // issue - like you're SSOing in with an external_id and email address, and a different ZenDesk user already has that email
+    // adddress) - and when that happens, it just goes right to the logout endpoint, indicating an error in the "kind" query param
+    // and the details of the error in the "message" query param.  We need to display that to the user, so they at least have some
+    // kind of explanation of their spontaneous logout to give to Synchro support.
+    //
+    if (req.query.kind == "error")
+    {
+        req.flash("warn", "Error - " + req.query.message);
+    }
+
     res.redirect('/');
 }
 
@@ -406,13 +444,27 @@ exports.manageAccount = function (req, res, next)
                     if (err)
                     {
                         req.flash("warn", "Error updating account information");
+                        res.render(page, locals);
                     }
                     else
                     {
                         setSessionUser(req.session, user, res);
-                        req.flash("info", "Account information successfully updated");
+                        
+                        // Potential user name change...
+                        //
+                        zendeskModel.synchUser(user, function (err)
+                        {
+                            if (err)
+                            {
+                                req.flash("warn", "Error synchronizing user with help center");
+                            }
+                            else
+                            {
+                                req.flash("info", "Account information successfully updated");
+                            }
+                            res.render(page, locals);
+                        });
                     }
-                    res.render(page, locals);
                 });
             }
             else
@@ -480,9 +532,9 @@ exports.license = function (req, res, next)
                                 setSessionUser(req.session, user, res);
                                 req.flash("info", "License Agreement successfully executed");
                             }
+                            res.render(page, locals);
                         });
                     }
-                    res.render(page, locals);
                 }
                 else
                 {
@@ -492,7 +544,6 @@ exports.license = function (req, res, next)
             }
         });
     }
-
 }
 
 exports.changeEmail = function (req, res, next)
@@ -565,26 +616,39 @@ exports.changeEmail = function (req, res, next)
                                         else
                                         {
                                             setSessionUser(req.session, user, res);
-
-                                            sendVerificationEmail(req, user, function (err, json)
+                                            
+                                            // Email address change...
+                                            //
+                                            zendeskModel.synchUser(user, function (err)
                                             {
                                                 if (err)
                                                 {
-                                                    req.flash("warn", "Email address updated, but failed to send account verification email");
-                                                    console.log("Sendgrid failure:", err);
-                                                    
-                                                    // In this specified failure case, we redirect to the "account" page, since it has a 
-                                                    // "resend verification" button.
-                                                    //
-                                                    res.redirect("/account");
+                                                    req.flash("warn", "Email address updated, but failed to synchronize with user email identity in help center, no account verification message sent");
+                                                    res.render(page, locals);
                                                 }
                                                 else
                                                 {
-                                                    // Change email address should always be coming from "account", so we'll go back the (and
-                                                    // skip the nextPage business).
-                                                    //
-                                                    req.flash("info", "Email address successfully updated and verification message sent");
-                                                    res.redirect("/account")
+                                                    sendVerificationEmail(req, user, function (err, json)
+                                                    {
+                                                        if (err)
+                                                        {
+                                                            req.flash("warn", "Email address updated, but failed to send account verification message");
+                                                            logger.error("Sendgrid failure:", err);
+                                                            
+                                                            // In this specified failure case, we redirect to the "account" page, since it has a 
+                                                            // "resend verification" button.
+                                                            //
+                                                            res.redirect("/account");
+                                                        }
+                                                        else
+                                                        {
+                                                            // Change email address should always be coming from "account", so we'll go back the (and
+                                                            // skip the nextPage business).
+                                                            //
+                                                            req.flash("info", "Email address successfully updated and verification message sent");
+                                                            res.redirect("/account")
+                                                        }
+                                                    });
                                                 }
                                             });
                                         }
@@ -796,7 +860,7 @@ exports.resendVerification = function (req, res, next)
                 if (err)
                 {
                     req.flash("warn", "Failed to send account verification email");
-                    console.log("Sendgrid failure:", err);
+                    logger.error("Sendgrid failure:", err);
                 }
                 else
                 {
@@ -848,7 +912,7 @@ exports.forgotPassword = function (req, res, next)
                             if (err)
                             {
                                 req.flash("warn", "Failed to send password reset email message");
-                                console.log("Sendgrid failure:", err);
+                                logger.error("Sendgrid failure:", err);
                                 res.render(page, locals);
                             }
                             else
@@ -928,7 +992,7 @@ exports.resetPassword = function (req, res, next)
                         if (err)
                         {
                             req.flash("warn", "Error updating account on recovery");
-                            console.log("Error updating account on recovery:", err);
+                            logger.errro("Error updating account on recovery:", err);
                             res.render(page, locals);
                         }
                         else
@@ -1013,8 +1077,21 @@ exports.getSecret = function (req, res, next)
             {
                 if (user.isPasswordValid(req.query.password))
                 {
-                    // Winner!
-                    res.json({ email: user.email, secret: user.secret });
+                    if (!user.verified)
+                    {
+                        res.statusCode = 403;
+                        res.send('Forbidden, user has not yet verified account email address on the synchro.io website');
+                    }
+                    else if (!user.licenseAgreed)
+                    {
+                        res.statusCode = 403;
+                        res.send('Forbidden, user has not yet agreed to the license agreement on the synchro.io website');
+                    }
+                    else
+                    {
+                        // Winner!
+                        res.json({ email: user.email, secret: user.secret });
+                    }
                 }
                 else
                 {
@@ -1045,7 +1122,7 @@ exports.dist = function (req, res, next)
         if (err)
         {
             // Error
-            console.log("dist - getUserForKey[secret] error:", err);
+            logger.error("dist - getUserForKey[secret] error:", err);
             res.statusCode = 500;
             res.send('Server Error');
         }
@@ -1059,12 +1136,7 @@ exports.dist = function (req, res, next)
         {
             // User found! 
             //
-            if (!user.verified)
-            {
-                res.statusCode = 403;
-                res.send('Forbidden, user has not yet verified their account email address on the synchro.io website');
-            }
-            else if (!user.licenseAgreed)
+            if (!user.licenseAgreed)
             {
                 res.statusCode = 403;
                 res.send('Forbidden, user has not yet agreed to the license agreement on the synchro.io website');
@@ -1089,7 +1161,7 @@ exports.dist = function (req, res, next)
                     }
                     else
                     {
-                        console.log('dist - getBlobToStream error', error);
+                        logger.error('dist - getBlobToStream error', error);
                         res.code = error.code;
                         res.statusCode = error.statusCode;
                         res.end();
