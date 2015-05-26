@@ -359,12 +359,20 @@ exports.zendeskLogin = function(req, res)
     //    
     var query = url.parse(req.url, true).query;
     var return_to = query['return_to'];
+    var direct = query['direct'] != null;
 
     var session = req.session;
     if (!session.userid)
     {
         // Not logged in to our site, so go log in now...
         //
+        // We don't want to do the message below on the straight up "clicked login from help center
+        // menu bar" case ("direct")...
+        //
+        if (return_to && !direct)
+        {
+            req.flash("info", "The Help Center function you have selected requires you to be signed in");
+        }
         session.nextPage = return_to;
         exports.login(req, res);
     }

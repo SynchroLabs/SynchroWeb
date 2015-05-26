@@ -38,6 +38,8 @@
     <Compile Include="routes\account.js" />
     <None Include="wwwsynchro.pubxml" />
     <Content Include="bin\Microsoft.NodejsTools.WebRole.dll" />
+    <Content Include="public\images\favicon-32x32.png" />
+    <Content Include="public\images\nodejs-logo.png" />
     <Content Include="views\account.hbs" />
     <Content Include="views\changeemail.hbs" />
     <Content Include="views\changepass.hbs" />
