@@ -1,17 +1,13 @@
-﻿{{#content "pageStyles" }}
-{{> formstyles}}
-{{/content}}
-
-<div class="container">
+﻿<div class="container">
     {{> flash}}
     <h2>Getting Started</h2>
     <p><strong>Register</strong></p>
     {{#if session.userid}}
-      {{#if session.verified}}
+    {{#if session.verified}}
     <p>Register for an account on Synchro.io and verify your email address - Completed!</p>
-      {{else}}
+    {{else}}
     <p>Register for an account on Synchro.io and <a href="/account">verify your email address</a> (currently unverified)</p>
-      {{/if}}
+    {{/if}}
     {{else}}
     <p><a href="/signup">Register</a> for an account on Synchro.io</p>
     {{/if}}
@@ -36,8 +32,10 @@ $ synchro new hello</code></pre>
     <p>This will start a Node.js server instance running the Synchro server, which will be serving your new app.</p>
     <p><strong>Verify that Node.js and Synchro are running</strong></p>
     <p>Using a web browser, navigate to the host/port on which Node.js and Synchro are running.  This will typically be <a href="http://localhost:1337">http://localhost:1337</a>.</p>
-    <p><strong>Download the Synchro client</strong></p>
-    <p>When you are ready to deploy your app to your end users, you will use Synchro.io to create custom branded application packages for each desired mobile platform.
-    For development and testing purposes, you will just download the generic Synchro client application onto your mobile device from the appropriate app store, and then point
-    it to your server endpoint.</p>
+    <p><strong>Download the Synchro Explorer mobile app</strong></p>
+    <p>
+        When you are ready to deploy your app to your end users, you will use Synchro.io to create custom branded application packages for each desired mobile platform.
+        For development and testing purposes, you will just download the Synchro Explorer mobile client application onto your mobile device from the appropriate app store,
+        and then point it to your server endpoint.
+    </p>
 </div>

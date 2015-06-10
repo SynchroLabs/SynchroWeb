@@ -95,6 +95,19 @@ app.get('/pricing', function (req, res)
     res.render('pricing', { session: req.session, pagePricing: true });
 });
 
+app.get('/about', function (req, res)
+{
+    res.render('about', { session: req.session });
+});
+app.get('/privacy', function (req, res)
+{
+    res.render('site_privacy', { session: req.session });
+});
+app.get('/appprivacy', function (req, res)
+{
+    res.render('app_privacy', { session: req.session });
+});
+
 // Login/logout
 //
 app.all('/login', account.login);
