@@ -1,5 +1,8 @@
 ﻿<div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
     <div class="container">
+        {{#if noNav}}
+        <div class="navbar-brand">Synchro.io</div>
+        {{else}}
         <div class="navbar-header">
             <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
                 <span class="sr-only">Toggle navigation</span>
@@ -32,5 +35,6 @@
                 {{/if}}
             </ul>
         </div>
+        {{/if}}
     </div>
 </div>

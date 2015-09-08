@@ -46,6 +46,7 @@
     <Content Include="views\about.hbs" />
     <Content Include="views\account.hbs" />
     <Content Include="views\app_privacy.hbs" />
+    <Content Include="views\app_support.hbs" />
     <Content Include="views\changeemail.hbs" />
     <Content Include="views\changepass.hbs" />
     <Content Include="package.json" />

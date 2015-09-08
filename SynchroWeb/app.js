@@ -107,6 +107,14 @@ app.get('/appprivacy', function (req, res)
 {
     res.render('app_privacy', { session: req.session });
 });
+app.get('/appprivacyios', function (req, res)
+{
+    res.render('app_privacy', { session: req.session, noNav: true });
+});
+app.get('/appsupport', function (req, res)
+{
+    res.render('app_support', { session: req.session, noNav: true });
+});
 
 // Login/logout
 //
