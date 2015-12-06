@@ -1,7 +1,23 @@
 ﻿<div class="container">
     {{> flash}}
-    <h2>Getting Started</h2>
-    <p><strong>Register</strong></p>
+    <h2><strong>Kick the Tires</strong></h2>
+    <h3>Download and Explore an App Built with Synchro</h3>
+    <p><strong>Synchro Civics</strong> is an app built on the Synchro platform and running in the cloud.  Its uses the Google 
+    <a href="https://developers.google.com/civic-information/">Civic Information API</a> to show your representatives at every level
+    of government based on your address.  Synchro Civics leverages location services on your device and the Google reverse geolocation API
+    to determine your approximate street address.  It also allows you to mark certain government officials as favorites, and it remembers your
+    favorites and recently used addresses between sessions.  Synchro Civics will even launch other apps on your device to interact with your represenatives.</p>
+    <p><strong>Synchro Civics</strong> does all of this on all three mobile platforms in less than 200 lines of JavaScript code, all running in the cloud.</p>
+    <p>
+        <img src="images/CircleFlag64.png" />
+        <a href="https://itunes.apple.com/us/app/synchro-civics/id1059308501?ls=1&mt=8"><img src="/images/iOSAppStoreBadge135x40.svg" /></a>
+        <a href="https://play.google.com/store/apps/details?id=io.synchro.client.android.customer.synchro.civics"><img src="/images/GooglePlay120x40.png" /></a>
+        <a href="https://www.microsoft.com/store/apps/9nblggh6gxfx"><img src="/images/WindowsStore155x40.jpg" /></a>
+    </p>  
+    <hr />
+    <h2><strong>Take a Test Drive</strong></h2>
+    <h3>Install a Development Environment and Start Building Your Own Apps in 10 Minutes</h3>
+    <h4><strong>Register</strong></h4>
     {{#if session.userid}}
     {{#if session.verified}}
     <p>Register for an account on Synchro.io and verify your email address - Completed!</p>
@@ -11,31 +27,55 @@
     {{else}}
     <p><a href="/signup">Register</a> for an account on Synchro.io</p>
     {{/if}}
-    <p><strong>Agree to the License</strong></p>
+    <h4><strong>Agree to the License</strong></h4>
     {{#if session.licenseAgreed}}
     <p>Agree to the Subscription and License Agreement for Synchro - Completed!</p>
     {{else}}
     <p>Agree to the Subscription and License Agreement for Synchro <a href="/license">available here</a></p>
     {{/if}}
-    <p><strong>Install Node.js</strong></p>
-    <p>If you haven't already done so, install <a href="https://nodejs.org/download/">Node.js</a></p>
-    <p><strong>Install the Synchro Command Line Interface (CLI)</strong></p>
+    <h4><strong>Install Node.js</strong></h4>
+    <p>If you haven't already done so, install <a href="https://nodejs.org/">Node.js</a></p>
+    <h4><strong>Install the Synchro Command Line Interface (CLI)</strong></h4>
     <pre><code>$ npm install -g synchro</code></pre>
-    <p><strong>Create a new Synchro app</strong></p>
+    <h4><strong>Create a new Synchro app</strong></h4>
     <p>Create a directory and switch to it, then in the new directory:</p>
     <pre><code>$ synchro init
 $ synchro new hello</code></pre>
     <p>This will install Synchro as a Node.js app in the directory, and create a new Synchro app called &quot;hello&quot;.</p>
     <p>Note: If it is your first time initializing Synchro on a given computer, you will be prompted for your Synchro.io account email address and password.</p>
-    <p><strong>Run Synchro</strong></p>
+    <h4><strong>Run Synchro</strong></h4>
     <pre><code>$ npm start</code></pre>
     <p>This will start a Node.js server instance running the Synchro server, which will be serving your new app.</p>
-    <p><strong>Verify that Node.js and Synchro are running</strong></p>
+    <h4><strong>Verify that Node.js and Synchro are running</strong></h4>
     <p>Using a web browser, navigate to the host/port on which Node.js and Synchro are running.  This will typically be <a href="http://localhost:1337">http://localhost:1337</a>.</p>
-    <p><strong>Download the Synchro Explorer mobile app</strong></p>
+    <h4><strong>Download the Synchro Explorer Mobile App to your Device</strong></h4>
     <p>
-        When you are ready to deploy your app to your end users, you will use Synchro.io to create custom branded application packages for each desired mobile platform.
-        For development and testing purposes, you will just download the Synchro Explorer mobile client application onto your mobile device from the appropriate app store,
-        and then point it to your server endpoint.
+        When you are ready to deploy your app to end users, you will use the Synchro App Builder to create custom branded application packages for each desired mobile platform.
+        The Synchro Civics app is an example of an app created with the Synchro App Builder.
     </p>
+    <p>
+        For development and testing purposes, you will download the <strong>Synchro Explorer</strong> app onto your mobile device from the appropriate app store.  Synchro
+        Explorer is preconfigured with the Synchro Civics endpoint, as well as the Synchro Samples endpoint.
+    </p>
+    <img src="images/synchro-logo-cloud-NEW-64.png" />
+    <a href="https://itunes.apple.com/us/app/synchro-explorer/id1018974588?ls=1&mt=8"><img src="/images/iOSAppStoreBadge135x40.svg" /></a>
+    <a href="https://play.google.com/store/apps/details?id=io.synchro.client.android"><img src="/images/GooglePlay120x40.png" /></a>
+    <a href="https://www.microsoft.com/store/apps/9nblggh38qqw"><img src="/images/WindowsStore155x40.jpg" /></a>
+    <h4><strong>Use Synchro Explorer to Access your App</strong></h4>
+    <p>From the Synchro Explorer main screen, select &quot;add&quot; and enter the endpoint of your application running on your server.  The address must be reachable by
+    the device on which you're running Synchro Explorer (i.e. not a localhost or loopback address), and the app must be running on your server when you add it to Synchro Explorer.
+    Your endpoint will typically be in the form: <code>http://[host_or_ip_addr]:1337/api/hello</code></p>
+    <p>Once you've found and added your app, it will show up in the app list in Synchro Explorer.  You can then launch it from there by tapping.</p>
+    <h4><strong>Optional: Install and Explore our Samples</strong></h4>
+    <p>If you would like to install and run the Synchro Samples app locally, you can do so by stopping your Synchro server instance, then doing:</p>
+    <pre><code>$ synchro install http://blob.synchro.io/apps/synchro-samples.tgz</code></pre>
+    <p>When you restart your Synchro server, you will be serving the Synchro Samples on your own endpoint.  You can then add this endpoint to Synchro Explorer as above.</p>
+    <h4><strong>Optional: Debug, Modify and Redeploy on the Fly</strong></h4>
+    <p>When you visit the web site provided by the Synchro server, as you did above to verify it was running, you will see a list of the Synchro apps
+    running on that server.  If you click one of these apps, you will enter a debugging and editing environment for the selected app.  Note that this feature can
+    be either disabled or protected by a login for production systems.</p>
+    <p>You can select modules to view in the list on the left.  Experiment by setting breakpoints and running the debugger, then accessing the app via Synchro Explorer.  You can
+    also edit these modules in place and deploy them, even while a client is running, with the client behavior reflecting the updated code in real time.</p>
+
 </div>
+

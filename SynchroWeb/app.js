@@ -94,6 +94,15 @@ app.get('/pricing', function (req, res)
 {
     res.render('pricing', { session: req.session, pagePricing: true });
 });
+app.get('/subscribe', function (req, res)
+{
+    res.render('subscribe', { session: req.session, pagePricing: true });
+});
+
+app.get('/launch', function (req, res)
+{
+    res.render('launch', { session: req.session, pagePress: true });
+});
 
 app.get('/about', function (req, res)
 {

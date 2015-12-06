@@ -14,7 +14,7 @@
                 <img src="/images/bob.png" />
             </p>
             <p>
-                Rules.
+                <a id="bob_mailto" href=""><span id="bob_email" /></a>
             </p>
         </div>
         <div class="col-md-6">
@@ -28,9 +28,20 @@
                 <img src="/images/blake.png" />
             </p>
             <p>
-                Also Rules.
+                <a id="blake_mailto" href=""><span id="blake_email" /></a>
             </p>
         </div>
     </div>
 
 </div>
+
+<script>
+    var at = "@";
+    var domain = "synchro";
+    var dot = ".";
+    var tld = "io"
+    document.getElementById("bob_email").innerHTML = "bob" + at + domain + dot + tld;
+    document.getElementById("bob_mailto").href = "mailto:" + "bob" + at + domain + dot + tld;
+    document.getElementById("blake_email").innerHTML = "blake" + at + domain + dot + tld;
+    document.getElementById("blake_mailto").href = "mailto:" + "blake" + at + domain + dot + tld;
+</script>

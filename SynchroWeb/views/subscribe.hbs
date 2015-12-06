@@ -1,0 +1,19 @@
+﻿<div class="container">
+    {{> flash}}
+    <h2>Subscribe</h2>
+    <p>
+        The <strong>Synchro App Builder</strong>, used to create custom mobile clients that you can distribute to end users, is currently
+        in pre-release testing.  If you would like a custom native mobile client for your Synchro app before the Synchro App Builder is
+        made available to the public, please open a support ticket via our web site or sent an email to <a id="support_mailto" href=""><span id="support_email" /></a>
+        and we will assist you.
+    </p>
+</div>
+
+<script>
+    var at = "@";
+    var domain = "synchro";
+    var dot = ".";
+    var tld = "io"
+    document.getElementById("support_email").innerHTML = "support" + at + domain + dot + tld;
+    document.getElementById("support_mailto").href = "mailto:" + "support" + at + domain + dot + tld;
+</script>

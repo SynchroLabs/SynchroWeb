@@ -1,70 +1,112 @@
 ﻿{{#content "pageStyles" }}
 <style type="text/css">
-    body { padding-top: 0px; }
+    body { padding-top: 0px; margin-top: 0px; }
 </style>
 {{/content}}
 
-<!-- Main jumbotron for a primary marketing message or call to action -->
 <div class="jumbotron">
+
     <div class="container">
+
         {{> flash}}
 
-        <h1>Synchro&trade;</h1>
-        <img class="aligncenter" src="/images/cloud_system_256.png" align="right" />
-        <h2>The Mobile Application as a Service Platform</h2>
-        <p>
-            Synchro is a revolutionary new platform that allows you to create high quality, high performance,
+        <img class="center-block" alt="Synchro&trade;" src="/images/synchro.png" />
+
+        <h2 style="clear:both; padding-top:5px;padding-bottom:5px;text-align:center;">The Cloud-Based Mobile App Platform</h2>
+
+        <p style="text-align:center; padding-bottom: 10px;">
+            Synchro is a revolutionary new platform that allows enterprise developers to create high quality, high performance,
             cross-platform native mobile applications using simple and familiar tools - JavaScript and the Node.js framework.
-            The best part: your mobile application, including all client logic, actually runs in the cloud!  Your application
-            runs on mobile devices without any of your application code running on the mobile device.  Did we just blow your mind?
+            You can use Synchro to create apps that install and run on mobile devices, but where all of your application code,
+            including client interaction logic, runs in the cloud.
         </p>
-        <p>
+
+        <div class="row">
+            <div class="col-xs-12 col-sm-8 col-sm-offset-2">
+                <div class="responsive-video ">
+                    <div class="embed-responsive embed-responsive-16by9">
+                        <iframe class="embed-responsive-item" src="https://www.youtube.com/embed/mgCCBNz6MEo?rel=0"></iframe>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <p class="text-center" style="padding-top:25px;">
             <a href="/getstarted" class="btn btn-primary btn-lg" role="button" data-toggle="modal">Get Started &raquo;</a>
         </p>
-        <div style="margin-top:30px;">
-            <iframe id="facebook" src="https://www.facebook.com/plugins/like.php?app_id=201995916528656&amp;href=http%3A%2F%2Fwww.facebook.com%2Fsynchrolabs&amp;send=false&amp;layout=button_count&amp;width=200&amp;show_faces=true&amp;action=like&amp;colorscheme=dark&amp;font=trebuchet+ms&amp;height=21" scrolling="no" frameborder="0" style="visibility:hidden; border:none; overflow:hidden; width:100px; height:21px;" onload="this.style.visibility = 'visible';" allowtransparency="true"></iframe>
-            <a href="https://twitter.com/SynchroLabs" class="twitter-follow-button" data-show-count="true" data-show-screen-name="false" style="visibility: hidden;">Follow @SynchroLabs</a>
-            <script>!function (d, s, id) { var js, fjs = d.getElementsByTagName(s)[0], p = /^http:/.test(d.location) ? 'http' : 'https'; if (!d.getElementById(id)) { js = d.createElement(s); js.id = id; js.src = p + '://platform.twitter.com/widgets.js'; fjs.parentNode.insertBefore(js, fjs); } }(document, 'script', 'twitter-wjs');</script>
-        </div>
+
     </div>
 </div>
 
 <div class="container">
-    <!-- Example row of columns -->
     <div class="row">
         <div class="col-md-4">
-            <h2>Apps Run in the Cloud</h2>
-            <p>
-                Your mobile apps are created, managed, and hosted in the cloud, meaning that you can make changes, test, and
-                deploy updates to your installed base instantly.  No more distribution hassles or configuration control nightmares.
-            </p>
-            <p>
-                You can run Synchro anywhere you can stand up a Node.js server, including on-premise or the cloud provider of your choice.
-            </p>
-        </div>
-        <div class="col-md-4">
-            <h2>Better Apps, Faster</h2>
+            <img src="/icons/build.png"/>
+            <h3>Build Better Apps, Faster</h3>
             <p>
                 The Synchro client-server platform puts your client logic on the server, resulting in streamlined integration with server
-                resources, and clients that are provably secure, in a fraction of the amount of code required by competing platforms.
+                resources, and apps created in a fraction of the amount of code required by competing platforms.
             </p>
-            <p>
-                Imagine writing a cross-platform native mobile client-server application in half the amount of code that it would take
-                to implement the same functionality as a web app.  No, we're not kidding.
-            </p>
+            <br/>
         </div>
         <div class="col-md-4">
-            <h2>Native Apps on Every OS</h2>
+            <img src="/icons/native.png"/>
+            <h3>Native Apps on Every OS</h3>
             <p>
                 Write your app once on the server, then deploy it as a branded, high quality native app with native look-and-feel and native performance
                 on iOS, Android, Windows, and Windows Phone.
             </p>
-            <p>
-                We give you the tools to customize your app based on the OS, device type, screen size, orientation, etc., but in most cases your
-                apps will look and run great out of the box with no customization.
-            </p>
+            <br />
         </div>
+        <div class="col-md-4">
+            <img src="/icons/deploy.png" />
+            <h3>Deploy Updates Instantly</h3>
+            <p>
+                Your mobile apps are created, managed, and hosted in the cloud, meaning that you can make changes, test, and
+                deploy updates to your installed base instantly.  No more distribution hassles or configuration control nightmares.
+            </p>
+            <br />
+        </div>    
     </div>
 
+    <div class="row">
+        <div class="col-md-4">
+            <img src="/icons/security.png" />
+            <h3>Provable Security</h3>
+            <p>
+                The mobile client apps that you create with Synchro connect to your cloud-based app using a secure connection.  They don't connect
+                to anything else or store anything on the device, so you know they're secure.
+            </p>
+            <br />
+        </div>
+        <div class="col-md-4">
+            <img src="/icons/node.png" />
+            <h3>Built with Node.js</h3>
+            <p>
+                Synchro is built on Node.js, and the Synchro apps that you create will run in a Node environment.  You'll be writing in JavaScript,
+                with access to all the great Node packages you use in your server apps.
+            </p>
+            <br />
+        </div>
+        <div class="col-md-4">
+            <img src="/icons/mvvm.png" />
+            <h3>Client-Server MVVM</h3>
+            <p>
+                If you've used MVVM frameworks like AngularJS or Knockout.js, you'll be right at home.  With Synchro, your View is defined 
+                in the cloud, runs on the client, and is bound to your ViewModel back in the cloud.
+            </p>
+            <br />
+        </div>
+    </div>
 </div>
-<!-- /container -->
+
+<h3 class="text-center bg-primary" style="padding-top:10px;padding-bottom:10px;">Build First-Class Mobile Apps.  Run them from the Cloud.</h3>
+
+<hr/>
+<div class="row">
+    <div style="text-align: center;">
+        <iframe id="facebook" src="https://www.facebook.com/plugins/like.php?app_id=201995916528656&amp;href=http%3A%2F%2Fwww.facebook.com%2Fsynchrolabs&amp;send=false&amp;layout=button_count&amp;width=200&amp;show_faces=true&amp;action=like&amp;colorscheme=dark&amp;font=trebuchet+ms&amp;height=21" scrolling="no" frameborder="0" style="visibility:hidden; border:none; overflow:hidden; width:100px; height:21px;" onload="this.style.visibility = 'visible';" allowtransparency="true"></iframe>
+        <a href="https://twitter.com/SynchroLabs" class="twitter-follow-button" data-show-count="true" data-show-screen-name="false" style="visibility: hidden;">Follow @SynchroLabs</a>
+        <script>!function (d, s, id) { var js, fjs = d.getElementsByTagName(s)[0], p = /^http:/.test(d.location) ? 'http' : 'https'; if (!d.getElementById(id)) { js = d.createElement(s); js.id = id; js.src = p + '://platform.twitter.com/widgets.js'; fjs.parentNode.insertBefore(js, fjs); } }(document, 'script', 'twitter-wjs');</script>
+    </div>
+</div>
