@@ -1000,7 +1000,7 @@ exports.resetPassword = function (req, res, next)
                         if (err)
                         {
                             req.flash("warn", "Error updating account on recovery");
-                            logger.errro("Error updating account on recovery:", err);
+                            logger.error("Error updating account on recovery:", err);
                             res.render(page, locals);
                         }
                         else
