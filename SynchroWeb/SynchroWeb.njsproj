@@ -52,6 +52,10 @@
     <Content Include="public\images\blake.png" />
     <Content Include="public\images\bob.png" />
     <Content Include="public\images\CircleFlag64.png" />
+    <Content Include="public\images\CivicsChrome.png" />
+    <Content Include="public\images\CivicsMobileNative.png" />
+    <Content Include="public\images\CivicsMobileWeb.png" />
+    <Content Include="public\images\CivicsSurfacePro.png" />
     <Content Include="public\images\favicon-32x32.png" />
     <Content Include="public\images\GooglePlay120x40.png" />
     <Content Include="public\images\ios-windows-android.png" />
@@ -64,6 +68,7 @@
     <Content Include="public\images\synchro.png" />
     <Content Include="public\images\users.png" />
     <Content Include="public\images\WindowsStore155x40.jpg" />
+    <Content Include="public\stylesheets\carousel.css" />
     <Content Include="public\stylesheets\pricing-tables.css" />
     <Content Include="public\stylesheets\style.css" />
     <Content Include="views\about.hbs" />
