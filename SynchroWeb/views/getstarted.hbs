@@ -18,22 +18,6 @@
     <hr />
     <h2><strong>Take a Test Drive</strong></h2>
     <h3>Install a Development Environment and Start Building Your Own Apps in 10 Minutes</h3>
-    <h4><strong>Register</strong></h4>
-    {{#if session.userid}}
-    {{#if session.verified}}
-    <p>Register for an account on Synchro.io and verify your email address - Completed!</p>
-    {{else}}
-    <p>Register for an account on Synchro.io and <a href="/account">verify your email address</a> (currently unverified)</p>
-    {{/if}}
-    {{else}}
-    <p><a href="/signup">Register</a> for an account on Synchro.io</p>
-    {{/if}}
-    <h4><strong>Agree to the License</strong></h4>
-    {{#if session.licenseAgreed}}
-    <p>Agree to the Subscription and License Agreement for Synchro - Completed!</p>
-    {{else}}
-    <p>Agree to the Subscription and License Agreement for Synchro <a href="/license">available here</a></p>
-    {{/if}}
     <h4><strong>Install Node.js</strong></h4>
     <p>If you haven't already done so, install <a href="https://nodejs.org/">Node.js</a></p>
     <h4><strong>Install the Synchro Command Line Interface (CLI)</strong></h4>
@@ -43,7 +27,6 @@
     <pre><code>$ synchro init
 $ synchro new hello</code></pre>
     <p>This will install Synchro as a Node.js app in the directory, and create a new Synchro app called &quot;hello&quot;.</p>
-    <p>Note: If it is your first time initializing Synchro on a given computer, you will be prompted for your Synchro.io account email address and password.</p>
     <h4><strong>Run Synchro</strong></h4>
     <pre><code>$ npm start</code></pre>
     <p>This will start a Node.js server instance running the Synchro server, which will be serving your new app.</p>
