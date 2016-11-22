@@ -61,10 +61,16 @@
     <Content Include="public\images\ios-windows-android.png" />
     <Content Include="public\images\iOSAppStoreBadge135x40.svg" />
     <Content Include="public\images\loc.png" />
+    <Content Include="public\images\MobileNative-165.png" />
+    <Content Include="public\images\nodejs-black.png" />
     <Content Include="public\images\nodejs-logo.png" />
     <Content Include="public\images\platforms.jpg" />
+    <Content Include="public\images\synchro-logo-cloud-512.png" />
     <Content Include="public\images\synchro-logo-cloud-NEW-64.png" />
+    <Content Include="public\images\synchro-logo-cloud.png" />
+    <Content Include="public\images\synchro-logo-tight.png" />
     <Content Include="public\images\synchro-mvvm.png" />
+    <Content Include="public\images\synchro-text.png" />
     <Content Include="public\images\synchro.png" />
     <Content Include="public\images\users.png" />
     <Content Include="public\images\WindowsStore155x40.jpg" />
@@ -95,6 +101,7 @@
     <Folder Include="views\partials\" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="views\docs.hbs" />
     <Content Include="views\forgot.hbs" />
     <Content Include="views\getstarted.hbs" />
     <Content Include="views\index.hbs" />

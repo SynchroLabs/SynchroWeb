@@ -1,0 +1,21 @@
+﻿<div class="container">
+    {{> flash}}
+    <h2>Documentation</h2>
+    <p>Documentation for Synchro, including API documentation, code samples, and tutorials, can be found at <a href="http://docs.synchro.io">http://docs.synchro.io</a></p>
+    <hr/>
+    <h2>Support</h2>
+    <p>If you have issues with Synchro, please refer to the <a href="https://github.com/SynchroLabs/SynchroServer">Synchro Server GitHub Repo</a> to see if your issue is know, and possibly answered/fixed.</p>
+    <p>If you find problems with the software, please open an <a href="https://github.com/SynchroLabs/SynchroServer/issues">issue in the GitHub repo</a>.</p>
+    <p>If you need help getting Synchro installed or getting your app to work, and you've already referred to the documentation, you can contact us via
+    email at:</p>
+    <p><a id="support_mailto" href=""><span id="support_email" /></a></p>
+</div>
+
+<script>
+    var at = "@";
+    var domain = "synchro";
+    var dot = ".";
+    var tld = "io"
+    document.getElementById("support_email").innerHTML = "support" + at + domain + dot + tld;
+    document.getElementById("support_mailto").href = "mailto:" + "support" + at + domain + dot + tld;
+</script>

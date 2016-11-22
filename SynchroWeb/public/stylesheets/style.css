@@ -52,3 +52,81 @@ h4
     z-index: 2;
 }
 
+/* Tagline and npm-install (responsive-ish) */
+
+h2.tagline {
+    clear: both;
+    margin-top: 0px;
+    margin-bottom: 40px;
+    text-align: center;
+}
+
+pre.npm-install {
+    width: 80%; 
+    margin-left: auto; 
+    margin-right: auto; 
+    font-weight: bold; 
+    font-size: 20px;
+}
+
+@media(max-width: 480px) {
+  h2.tagline {
+    font-size: 16pt;
+  }
+
+  pre.npm-install {
+      width: 100%;
+  }
+}
+
+/* "Node.js + Synchro = Native Mobile Apps" table(s) (responsive-ish) */
+
+table.equation {
+    margin-left: auto;
+    margin-right: auto;
+}
+
+table.equation.linear {
+   display: table;
+    margin-bottom: 20px;
+}
+
+table.equation.stacked {
+    display: none;
+    margin-bottom: 30px;
+}
+
+@media(max-width: 768px) {
+  table.equation.stacked {
+      display: table;
+  }
+
+  table.equation.linear {
+      display: none;
+  }
+}
+
+.equation td {
+    text-align: center;
+}
+
+.equation img {
+    max-height: 165px;
+    display: inline;
+}
+
+.equation p.operator {
+    margin: 20px;
+    font-size: 72px;
+    line-height: normal;
+}
+
+.equation .caption td {
+    vertical-align: top;
+}
+
+.equation p.caption {
+    font-size: 32px;
+    font-weight: bold;
+    margin-bottom: 0px;
+}

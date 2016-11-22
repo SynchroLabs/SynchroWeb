@@ -98,6 +98,10 @@ app.get('/subscribe', function (req, res)
 {
     res.render('subscribe', { session: req.session, pagePricing: true });
 });
+app.get('/docs', function (req, res)
+{
+    res.render('docs', { session: req.session, pageDocs: true });
+});
 
 app.get('/launch', function (req, res)
 {
